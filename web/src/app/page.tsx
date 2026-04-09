@@ -5,6 +5,7 @@ import { ProductShowcase } from "@/components/sections/ProductShowcase";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Research } from "@/components/sections/Research";
 import { Privacy } from "@/components/sections/Privacy";
+import { CTA } from "@/components/sections/CTA";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <HowItWorks />
       <Research />
       <Privacy />
+      <CTA />
     </main>
   );
 }
