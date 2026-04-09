@@ -1,6 +1,6 @@
 <script lang="ts">
   import { liveUpdate, currentSession } from "../lib/stores";
-  import { formatTime, categoryLabel, categoryColor } from "../lib/utils";
+  import { relativeTime, categoryLabel, categoryColor } from "../lib/utils";
   import type { SessionUpdate } from "../lib/types";
 
   interface FeedEntry {
@@ -47,7 +47,7 @@
           ></span>
           <span class="feed-app">{entry.app}</span>
           <span class="feed-cat">{categoryLabel(entry.category)}</span>
-          <span class="feed-time">{formatTime(entry.timestamp)}</span>
+          <span class="feed-time">{relativeTime(entry.timestamp)}</span>
         </div>
       {/each}
     </div>
