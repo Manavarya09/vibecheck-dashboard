@@ -38,7 +38,7 @@ export function Header() {
           VibeCheck
         </a>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}

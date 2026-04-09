@@ -3,7 +3,7 @@ import { GITHUB_REPO } from "@/lib/constants";
 
 export function Footer() {
   return (
-    <footer className="py-16 px-6 border-t border-border">
+    <footer className="py-16 px-6 border-t border-border" role="contentinfo">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div>
