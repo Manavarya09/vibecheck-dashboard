@@ -23,9 +23,9 @@ export function StatCard({
   const count = useCountUp(value, 2000, isInView, decimals);
 
   return (
-    <div ref={ref} className="flex flex-col">
+    <div ref={ref} className="flex flex-col group">
       <div className="flex items-baseline gap-1">
-        <span className="text-5xl md:text-6xl font-bold font-mono text-terracotta tabular-nums">
+        <span className="text-5xl md:text-6xl font-bold font-mono text-terracotta tabular-nums transition-transform duration-300 group-hover:-translate-y-1">
           {isInView ? count : 0}
         </span>
         <span className="text-2xl md:text-3xl font-bold text-terracotta">
