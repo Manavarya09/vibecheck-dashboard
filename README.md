@@ -1,5 +1,7 @@
 # VibeCheck Dashboard
 
+![CI](https://github.com/Manavarya09/vibecheck-dashboard/actions/workflows/ci.yml/badge.svg)
+
 A desktop application that monitors your AI coding tool usage and surfaces patterns you might not see yourself. Built for developers who want to understand their relationship with AI-assisted programming.
 
 VibeCheck sits in your system tray, quietly tracking which applications you use and how you split time between AI-assisted coding, manual coding, and everything else. It stores all data locally in SQLite -- nothing leaves your machine.
