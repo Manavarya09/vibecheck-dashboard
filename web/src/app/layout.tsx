@@ -19,7 +19,16 @@ export const metadata: Metadata = {
     description:
       "Screen Time for the age of vibe coding. Track, understand, and improve your AI coding habits.",
     type: "website",
+    url: "https://vibecheck.dev",
+    siteName: "VibeCheck",
+    locale: "en_US",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "VibeCheck -- Developer Wellness in the Age of AI",
+    description: "Screen Time for the age of vibe coding.",
+  },
+  metadataBase: new URL("https://vibecheck.dev"),
 };
 
 export default function RootLayout({
