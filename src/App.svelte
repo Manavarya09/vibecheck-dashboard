@@ -89,7 +89,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    max-width: 800px;
+    max-width: 840px;
+    margin: 0 auto;
   }
   .col-main,
   .col-side {
