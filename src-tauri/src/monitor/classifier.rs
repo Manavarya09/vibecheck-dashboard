@@ -312,6 +312,22 @@ mod tests {
     }
 
     #[test]
+    fn zen_browser_with_claude_is_ai_assisted() {
+        assert_eq!(
+            classify(&window("Zen Browser", "Claude - new chat")),
+            ActivityCategory::AiAssisted
+        );
+    }
+
+    #[test]
+    fn arc_browser_without_ai_is_non_coding() {
+        assert_eq!(
+            classify(&window("Arc", "Twitter")),
+            ActivityCategory::NonCoding
+        );
+    }
+
+    #[test]
     fn codeium_is_ai_assisted() {
         assert_eq!(
             classify(&window("Codeium", "project/main.rs")),
