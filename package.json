@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "lint:rust": "cd src-tauri && cargo fmt --check && cargo clippy -- -D warnings",
+    "lint:ts": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "cd src-tauri && cargo test"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
