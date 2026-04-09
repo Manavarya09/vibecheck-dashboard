@@ -248,3 +248,132 @@ pub fn upsert_daily_summary(conn: &Connection) -> Result<(), AppError> {
     )?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::db::connection;
+    use std::path::PathBuf;
+    use tempfile::tempdir;
+
+    fn test_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "PRAGMA journal_mode = WAL;
+            CREATE TABLE IF NOT EXISTS sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                started_at TEXT NOT NULL,
+                ended_at TEXT,
+                duration_secs INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'active'
+                CHECK(status IN ('active', 'paused', 'completed'))
+            );
+            CREATE TABLE IF NOT EXISTS activity_entries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id INTEGER NOT NULL REFERENCES sessions(id),
+                timestamp TEXT NOT NULL,
+                app_name TEXT NOT NULL,
+                window_title TEXT NOT NULL DEFAULT '',
+                category TEXT NOT NULL
+                CHECK(category IN ('ai_assisted', 'manual_coding', 'non_coding')),
+                duration_secs INTEGER NOT NULL DEFAULT 5
+            );
+            CREATE TABLE IF NOT EXISTS daily_summaries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL UNIQUE,
+                total_secs INTEGER NOT NULL DEFAULT 0,
+                ai_assisted_secs INTEGER NOT NULL DEFAULT 0,
+                manual_coding_secs INTEGER NOT NULL DEFAULT 0,
+                non_coding_secs INTEGER NOT NULL DEFAULT 0,
+                session_count INTEGER NOT NULL DEFAULT 0
+            );"
+        ).unwrap();
+        conn
+    }
+
+    #[test]
+    fn create_session_returns_active_session() {
+        let conn = test_db();
+        let session = create_session(&conn).unwrap();
+        assert_eq!(session.status, "active");
+        assert!(session.ended_at.is_none());
+        assert!(session.id > 0);
+    }
+
+    #[test]
+    fn get_active_session_finds_active() {
+        let conn = test_db();
+        let created = create_session(&conn).unwrap();
+        let found = get_active_session(&conn).unwrap();
+        assert!(found.is_some());
+        assert_eq!(found.unwrap().id, created.id);
+    }
+
+    #[test]
+    fn end_session_sets_completed() {
+        let conn = test_db();
+        let session = create_session(&conn).unwrap();
+        end_session(&conn, session.id).unwrap();
+        let found = get_active_session(&conn).unwrap();
+        assert!(found.is_none());
+    }
+
+    #[test]
+    fn pause_and_resume_session() {
+        let conn = test_db();
+        let session = create_session(&conn).unwrap();
+        pause_session(&conn, session.id).unwrap();
+        let paused = get_active_session(&conn).unwrap().unwrap();
+        assert_eq!(paused.status, "paused");
+        resume_session(&conn, session.id).unwrap();
+        let resumed = get_active_session(&conn).unwrap().unwrap();
+        assert_eq!(resumed.status, "active");
+    }
+
+    #[test]
+    fn insert_and_query_activity() {
+        let conn = test_db();
+        let session = create_session(&conn).unwrap();
+        insert_activity(&conn, session.id, "Claude", "", "ai_assisted").unwrap();
+        insert_activity(&conn, session.id, "Code", "main.rs", "manual_coding").unwrap();
+        insert_activity(&conn, session.id, "Slack", "#general", "non_coding").unwrap();
+        let entries = get_recent_activity(&conn, session.id, 10).unwrap();
+        assert_eq!(entries.len(), 3);
+    }
+
+    #[test]
+    fn session_stats_aggregation() {
+        let conn = test_db();
+        let session = create_session(&conn).unwrap();
+        for _ in 0..5 {
+            insert_activity(&conn, session.id, "Claude", "", "ai_assisted").unwrap();
+        }
+        for _ in 0..3 {
+            insert_activity(&conn, session.id, "Code", "", "manual_coding").unwrap();
+        }
+        let stats = get_session_stats(&conn, session.id).unwrap();
+        assert_eq!(stats.ai_assisted_secs, 25); // 5 * 5s
+        assert_eq!(stats.manual_coding_secs, 15); // 3 * 5s
+        assert_eq!(stats.total_duration_secs, 40);
+    }
+
+    #[test]
+    fn recent_sessions_ordering() {
+        let conn = test_db();
+        let s1 = create_session(&conn).unwrap();
+        end_session(&conn, s1.id).unwrap();
+        let s2 = create_session(&conn).unwrap();
+        end_session(&conn, s2.id).unwrap();
+        let recent = get_recent_sessions(&conn, 10).unwrap();
+        assert_eq!(recent.len(), 2);
+        assert!(recent[0].id > recent[1].id); // newest first
+    }
+
+    #[test]
+    fn today_summary_empty() {
+        let conn = test_db();
+        let summary = get_today_summary(&conn).unwrap();
+        assert_eq!(summary.total_secs, 0);
+        assert_eq!(summary.session_count, 0);
+    }
+}
