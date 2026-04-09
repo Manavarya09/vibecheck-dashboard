@@ -377,3 +377,22 @@ mod tests {
         assert_eq!(summary.session_count, 0);
     }
 }
+
+pub fn get_database_stats(conn: &Connection) -> Result<(i64, i64, i64), AppError> {
+    let sessions: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM sessions",
+        [],
+        |row| row.get(0),
+    )?;
+    let activities: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM activity_entries",
+        [],
+        |row| row.get(0),
+    )?;
+    let days: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM daily_summaries",
+        [],
+        |row| row.get(0),
+    )?;
+    Ok((sessions, activities, days))
+}
