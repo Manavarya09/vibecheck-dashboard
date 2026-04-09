@@ -5,6 +5,7 @@ use tauri::tray::TrayIconId;
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::time::{interval, Duration};
 
+use log::{debug, info, warn};
 use super::classifier;
 use super::detector;
 use crate::db::models::SessionUpdate;
@@ -29,6 +30,7 @@ pub fn start_monitoring(app_handle: AppHandle) {
     let monitor_state = app_handle.state::<Arc<MonitorState>>();
     monitor_state.is_running.store(true, Ordering::SeqCst);
     monitor_state.is_paused.store(false, Ordering::SeqCst);
+    info!("Session monitoring started");
 
     let handle = app_handle.clone();
     tauri::async_runtime::spawn(async move {
@@ -59,7 +61,10 @@ pub fn start_monitoring(app_handle: AppHandle) {
 
             let window = match detector::get_active_window_info() {
                 Ok(w) => w,
-                Err(_) => continue,
+                Err(e) => {
+                    warn!("Window detection failed: {}", e);
+                    continue;
+                }
             };
 
             let mut category = classifier::classify(&window);
@@ -94,6 +99,7 @@ pub fn start_monitoring(app_handle: AppHandle) {
                     manual_coding_secs: stats.manual_coding_secs,
                     non_coding_secs: stats.non_coding_secs,
                 };
+                debug!("Session update: {}s total, {} active", update.duration_secs, update.current_app);
                 let _ = handle.emit("session-update", &update);
 
                 // Update tray tooltip with session duration
