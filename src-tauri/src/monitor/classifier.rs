@@ -42,7 +42,12 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
         return ActivityCategory::ManualCoding;
     }
 
-    // Terminal emulators
+    // Terminal with AI coding tools (Claude Code, aider, etc.)
+    if is_terminal(&app) && has_ai_terminal_tool_in_title(&title) {
+        return ActivityCategory::AiAssisted;
+    }
+
+    // Terminal emulators (plain terminal usage)
     if is_terminal(&app) {
         return ActivityCategory::ManualCoding;
     }
@@ -75,6 +80,17 @@ fn has_ai_tool_in_title(title: &str) -> bool {
         || title.contains("v0")
         || title.contains("bolt")
         || title.contains("replit")
+}
+
+fn has_ai_terminal_tool_in_title(title: &str) -> bool {
+    title.contains("claude")
+        || title.contains("aider")
+        || title.contains("copilot")
+        || title.contains("cody")
+        || title.contains("continue")
+        || title.contains("mentat")
+        || title.contains("sweep")
+        || title.contains("codex")
 }
 
 fn is_code_editor(app: &str) -> bool {
