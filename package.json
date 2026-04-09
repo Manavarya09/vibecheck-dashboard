@@ -11,7 +11,9 @@
     "tauri": "tauri",
     "lint:rust": "cd src-tauri && cargo fmt --check && cargo clippy -- -D warnings",
     "lint:ts": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "cd src-tauri && cargo test"
+    "test": "cd src-tauri && cargo test",
+    "web:dev": "cd web && npm run dev",
+    "web:build": "cd web && npm run build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
