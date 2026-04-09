@@ -21,8 +21,8 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
     let app = window.app_name.to_lowercase();
     let title = window.window_title.to_lowercase();
 
-    // Cursor is always AI-assisted
-    if app.contains("cursor") {
+    // Standalone AI coding tools (app-level detection)
+    if is_ai_coding_app(&app) {
         return ActivityCategory::AiAssisted;
     }
 
@@ -77,6 +77,13 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
     }
 
     ActivityCategory::NonCoding
+}
+
+fn is_ai_coding_app(app: &str) -> bool {
+    app.contains("cursor")
+        || app.contains("claude")
+        || app.contains("windsurf")
+        || app.contains("codeium")
 }
 
 fn is_browser(app: &str) -> bool {
@@ -166,6 +173,17 @@ mod tests {
     fn cursor_is_always_ai_assisted() {
         assert_eq!(classify(&window("Cursor", "main.rs")), ActivityCategory::AiAssisted);
         assert_eq!(classify(&window("cursor", "")), ActivityCategory::AiAssisted);
+    }
+
+    #[test]
+    fn claude_code_app_is_ai_assisted() {
+        assert_eq!(classify(&window("Claude", "")), ActivityCategory::AiAssisted);
+        assert_eq!(classify(&window("claude", "~/vibe-track")), ActivityCategory::AiAssisted);
+    }
+
+    #[test]
+    fn windsurf_is_ai_assisted() {
+        assert_eq!(classify(&window("Windsurf", "main.rs")), ActivityCategory::AiAssisted);
     }
 
     #[test]
