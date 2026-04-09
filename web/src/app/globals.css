@@ -92,3 +92,19 @@ html {
 .nav-link:hover::after {
   width: 100%;
 }
+
+.section-fade-to-dark {
+  background: linear-gradient(
+    to bottom,
+    var(--color-cream) 0%,
+    var(--color-navy) 100%
+  );
+}
+
+.section-fade-from-dark {
+  background: linear-gradient(
+    to bottom,
+    var(--color-navy) 0%,
+    var(--color-cream) 100%
+  );
+}
