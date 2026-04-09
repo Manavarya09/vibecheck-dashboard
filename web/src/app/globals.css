@@ -68,3 +68,8 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-navy-muted);
 }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
