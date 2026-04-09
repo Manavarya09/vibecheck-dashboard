@@ -8,6 +8,7 @@
     getRecentSessions,
     getTodaySummary,
   } from "../lib/api";
+  import { liveUpdate } from "../lib/stores";
   import { formatDuration, pct } from "../lib/utils";
 
   let loading = $state(false);
@@ -36,6 +37,7 @@
     try {
       await stopSession();
       currentSession.set(null);
+      liveUpdate.set(null);
       // Refresh data after stopping
       const [summary, recent] = await Promise.all([
         getTodaySummary(),
