@@ -77,6 +77,7 @@
     <div class="brand">
       <h1 class="brand-name">VibeCheck</h1>
       <p class="brand-tagline">Developer Wellness</p>
+      <p class="brand-version">v0.1.0</p>
     </div>
 
     <div class="controls">
@@ -144,6 +145,12 @@
     font-weight: 700;
     color: var(--text);
     letter-spacing: -0.02em;
+  }
+  .brand-version {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    margin-top: 2px;
   }
   .brand-tagline {
     font-size: 12px;
