@@ -111,6 +111,9 @@ fn has_ai_tool_in_title(title: &str) -> bool {
         || title.contains("copilot chat")
         || title.contains("amazon q")
         || title.contains("codewhisperer")
+        || title.contains("devin")
+        || title.contains("lovable")
+        || title.contains("cursor composer")
 }
 
 fn has_ai_terminal_tool_in_title(title: &str) -> bool {
