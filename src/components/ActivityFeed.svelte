@@ -89,6 +89,9 @@
   .feed-row:first-child {
     background: var(--surface-hover);
   }
+  .feed-row:hover {
+    background: var(--surface-hover);
+  }
   .feed-dot {
     width: 6px;
     height: 6px;
