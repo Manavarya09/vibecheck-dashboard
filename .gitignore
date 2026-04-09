@@ -6,3 +6,5 @@ dist/
 # Rust
 src-tauri/target/
 src-tauri/gen/schemas
+web/node_modules/
+web/.next/
