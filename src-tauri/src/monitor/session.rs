@@ -61,12 +61,24 @@ pub fn start_monitoring(app_handle: AppHandle) {
                 Err(_) => continue,
             };
 
-            let category = classifier::classify(&window);
+            let mut category = classifier::classify(&window);
+            let mut app_name = window.app_name.clone();
+
+            // If the focused window isn't already AI-assisted, check if an
+            // AI coding tool is running in the background. The entire period
+            // where Claude Code (or aider, codex) is active counts as
+            // AI-assisted work -- not just the moments its window is focused.
+            if category != classifier::ActivityCategory::AiAssisted {
+                if let Some(tool_name) = detector::find_running_ai_tool() {
+                    category = classifier::ActivityCategory::AiAssisted;
+                    app_name = format!("{} (bg)", tool_name);
+                }
+            }
 
             let _ = queries::insert_activity(
                 &conn,
                 session.id,
-                &window.app_name,
+                &app_name,
                 &window.window_title,
                 category.as_str(),
             );
@@ -75,10 +87,8 @@ pub fn start_monitoring(app_handle: AppHandle) {
                 let update = SessionUpdate {
                     session_id: session.id,
                     duration_secs: stats.total_duration_secs,
-                    current_activity: stats
-                        .current_activity
-                        .unwrap_or_else(|| "non_coding".to_string()),
-                    current_app: stats.current_app.unwrap_or_default(),
+                    current_activity: category.as_str().to_string(),
+                    current_app: app_name.clone(),
                     ai_assisted_secs: stats.ai_assisted_secs,
                     manual_coding_secs: stats.manual_coding_secs,
                     non_coding_secs: stats.non_coding_secs,

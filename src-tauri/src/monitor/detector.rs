@@ -99,3 +99,35 @@ pub fn has_ai_child_process(parent_pid: u64) -> Option<String> {
 pub fn has_ai_child_process(_parent_pid: u64) -> Option<String> {
     None
 }
+
+/// Check if any AI coding tool process is running anywhere on the system.
+/// If Claude Code is running, the entire session is AI-assisted -- not just
+/// the moments when its window is focused. The user prompts, then the AI
+/// codes for them. Switching to another window doesn't change that.
+#[cfg(target_os = "macos")]
+pub fn find_running_ai_tool() -> Option<String> {
+    let ai_tools: &[(&str, &str)] = &[
+        ("claude", "Claude Code"),
+        ("aider", "aider"),
+        ("codex", "Codex"),
+    ];
+
+    for (process_name, display_name) in ai_tools {
+        if let Ok(output) = std::process::Command::new("pgrep")
+            .args(["-x", process_name])
+            .output()
+        {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            if !stdout.trim().is_empty() {
+                return Some(display_name.to_string());
+            }
+        }
+    }
+
+    None
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn find_running_ai_tool() -> Option<String> {
+    None
+}
