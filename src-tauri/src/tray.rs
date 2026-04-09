@@ -1,5 +1,5 @@
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Emitter, Manager,
 };
@@ -8,7 +8,8 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let show = MenuItem::with_id(app, "show", "Show Dashboard", true, None::<&str>)?;
     let pause = MenuItem::with_id(app, "pause", "Pause Session", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit VibeCheck", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &pause, &quit])?;
+    let sep = PredefinedMenuItem::separator(app)?;
+    let menu = Menu::with_items(app, &[&show, &pause, &sep, &quit])?;
 
     TrayIconBuilder::with_id("main-tray")
         .tooltip("VibeCheck")
