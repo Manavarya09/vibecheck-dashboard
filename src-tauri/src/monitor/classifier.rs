@@ -84,6 +84,7 @@ fn is_ai_coding_app(app: &str) -> bool {
         || app.contains("claude")
         || app.contains("windsurf")
         || app.contains("codeium")
+        || app.contains("amazon q")
 }
 
 fn is_browser(app: &str) -> bool {
@@ -108,6 +109,8 @@ fn has_ai_tool_in_title(title: &str) -> bool {
         || title.contains("replit")
         || title.contains("github copilot")
         || title.contains("copilot chat")
+        || title.contains("amazon q")
+        || title.contains("codewhisperer")
 }
 
 fn has_ai_terminal_tool_in_title(title: &str) -> bool {
