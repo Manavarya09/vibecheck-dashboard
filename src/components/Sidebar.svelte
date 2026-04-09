@@ -86,6 +86,7 @@
       {#if !hasSession}
         <button
           class="btn btn-primary"
+          data-testid="start-session"
           onclick={handleStart}
           disabled={loading}
         >
@@ -101,7 +102,7 @@
             Resume
           </button>
         {/if}
-        <button class="btn btn-danger" onclick={handleStop} disabled={loading}>
+        <button class="btn btn-danger" data-testid="stop-session" onclick={handleStop} disabled={loading}>
           Stop
         </button>
       {/if}
