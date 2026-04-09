@@ -84,3 +84,8 @@ button:disabled {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
+
+::selection {
+  background: var(--primary);
+  color: white;
+}
