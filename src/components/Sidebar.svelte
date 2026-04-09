@@ -72,7 +72,7 @@
   }
 </script>
 
-<aside class="sidebar">
+<aside class="sidebar" data-tauri-drag-region>
   <div class="sidebar-top">
     <div class="brand">
       <h1 class="brand-name">VibeCheck</h1>
