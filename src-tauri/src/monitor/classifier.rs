@@ -47,6 +47,14 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
         return ActivityCategory::ManualCoding;
     }
 
+    // JetBrains IDEs
+    if is_jetbrains(&app) {
+        if title.contains("ai assistant") {
+            return ActivityCategory::AiAssisted;
+        }
+        return ActivityCategory::ManualCoding;
+    }
+
     // Xcode
     if app.contains("xcode") {
         return ActivityCategory::ManualCoding;
@@ -79,6 +87,21 @@ fn has_ai_tool_in_title(title: &str) -> bool {
 
 fn is_code_editor(app: &str) -> bool {
     app.contains("code") || app.contains("visual studio") || app.contains("zed")
+}
+
+fn is_jetbrains(app: &str) -> bool {
+    app.contains("idea")
+        || app.contains("intellij")
+        || app.contains("pycharm")
+        || app.contains("webstorm")
+        || app.contains("goland")
+        || app.contains("phpstorm")
+        || app.contains("rustrover")
+        || app.contains("clion")
+        || app.contains("rider")
+        || app.contains("datagrip")
+        || app.contains("dataspell")
+        || app.contains("fleet")
 }
 
 fn is_terminal(app: &str) -> bool {
