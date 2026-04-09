@@ -130,4 +130,11 @@ pub fn start_monitoring(app_handle: AppHandle) {
 pub fn stop_monitoring(app_handle: &AppHandle) {
     let monitor_state = app_handle.state::<Arc<MonitorState>>();
     monitor_state.is_running.store(false, Ordering::SeqCst);
+    monitor_state.is_paused.store(false, Ordering::SeqCst);
+    info!("Session monitoring stopped");
+
+    // Reset tray tooltip
+    if let Some(tray) = app_handle.tray_by_id(&TrayIconId::new("main-tray")) {
+        let _ = tray.set_tooltip(Some("VibeCheck"));
+    }
 }
