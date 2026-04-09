@@ -47,6 +47,11 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
         return ActivityCategory::AiAssisted;
     }
 
+    // Terminal-based editors (Neovim, Vim, Helix, etc.)
+    if is_terminal(&app) && has_terminal_editor_in_title(&title) {
+        return ActivityCategory::ManualCoding;
+    }
+
     // Terminal emulators (plain terminal usage)
     if is_terminal(&app) {
         return ActivityCategory::ManualCoding;
@@ -99,6 +104,15 @@ fn has_ai_terminal_tool_in_title(title: &str) -> bool {
         || title.contains("mentat")
         || title.contains("sweep")
         || title.contains("codex")
+}
+
+fn has_terminal_editor_in_title(title: &str) -> bool {
+    title.contains("nvim")
+        || title.contains("vim")
+        || title.contains("helix")
+        || title.contains("kakoune")
+        || title.contains("nano")
+        || title.contains("emacs")
 }
 
 fn is_code_editor(app: &str) -> bool {
