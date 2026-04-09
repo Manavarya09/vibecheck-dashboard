@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
+use tauri::tray::TrayIconId;
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::time::{interval, Duration};
 
@@ -94,6 +95,21 @@ pub fn start_monitoring(app_handle: AppHandle) {
                     non_coding_secs: stats.non_coding_secs,
                 };
                 let _ = handle.emit("session-update", &update);
+
+                // Update tray tooltip with session duration
+                let total = stats.total_duration_secs;
+                let h = total / 3600;
+                let m = (total % 3600) / 60;
+                let tooltip = if h > 0 {
+                    format!("VibeCheck  {}h {}m", h, m)
+                } else {
+                    format!("VibeCheck  {}m", m)
+                };
+                if let Some(tray) =
+                    handle.tray_by_id(&TrayIconId::new("main-tray"))
+                {
+                    let _ = tray.set_tooltip(Some(&tooltip));
+                }
             }
 
             summary_tick += 1;

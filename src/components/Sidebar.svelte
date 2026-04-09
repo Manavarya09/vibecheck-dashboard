@@ -1,7 +1,14 @@
 <script lang="ts">
-  import { currentSession, todaySummary } from "../lib/stores";
-  import { startSession, stopSession, pauseSession, resumeSession } from "../lib/api";
-  import { formatDuration } from "../lib/utils";
+  import { currentSession, todaySummary, recentSessions } from "../lib/stores";
+  import {
+    startSession,
+    stopSession,
+    pauseSession,
+    resumeSession,
+    getRecentSessions,
+    getTodaySummary,
+  } from "../lib/api";
+  import { formatDuration, pct } from "../lib/utils";
 
   let loading = $state(false);
   let session = $derived($currentSession);
@@ -9,6 +16,9 @@
   let isPaused = $derived(session?.status === "paused");
   let hasSession = $derived(session != null);
   let todayTotal = $derived($todaySummary?.totalSecs ?? 0);
+  let todayAi = $derived($todaySummary?.aiAssistedSecs ?? 0);
+  let todaySessions = $derived($todaySummary?.sessionCount ?? 0);
+  let aiPct = $derived(pct(todayAi, todayTotal));
 
   async function handleStart() {
     loading = true;
@@ -26,6 +36,13 @@
     try {
       await stopSession();
       currentSession.set(null);
+      // Refresh data after stopping
+      const [summary, recent] = await Promise.all([
+        getTodaySummary(),
+        getRecentSessions(),
+      ]);
+      todaySummary.set(summary);
+      recentSessions.set(recent);
     } catch (e) {
       console.error("Failed to stop session:", e);
     }
@@ -64,7 +81,11 @@
 
     <div class="controls">
       {#if !hasSession}
-        <button class="btn btn-primary" onclick={handleStart} disabled={loading}>
+        <button
+          class="btn btn-primary"
+          onclick={handleStart}
+          disabled={loading}
+        >
           Start Session
         </button>
       {:else}
@@ -85,10 +106,22 @@
   </div>
 
   <div class="sidebar-bottom">
-    <div class="today-glance">
-      <span class="today-label">Today</span>
-      <span class="today-value">{formatDuration(todayTotal)}</span>
+    <div class="stat-row">
+      <span class="stat-label">Today</span>
+      <span class="stat-value">{formatDuration(todayTotal)}</span>
     </div>
+    {#if todayTotal > 0}
+      <div class="stat-row">
+        <span class="stat-label">AI ratio</span>
+        <span class="stat-value accent">{aiPct}%</span>
+      </div>
+    {/if}
+    {#if todaySessions > 0}
+      <div class="stat-row">
+        <span class="stat-label">Sessions</span>
+        <span class="stat-value">{todaySessions}</span>
+      </div>
+    {/if}
   </div>
 </aside>
 
@@ -157,23 +190,29 @@
   .sidebar-bottom {
     border-top: 1px solid var(--border);
     padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-  .today-glance {
+  .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
   }
-  .today-label {
+  .stat-label {
     font-size: 12px;
     color: var(--text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-weight: 600;
   }
-  .today-value {
+  .stat-value {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text);
+  }
+  .stat-value.accent {
+    color: var(--primary);
   }
 </style>
