@@ -42,6 +42,11 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
         return ActivityCategory::ManualCoding;
     }
 
+    // Terminal-based editors (detected via window title)
+    if is_terminal(&app) && has_terminal_editor_in_title(&title) {
+        return ActivityCategory::ManualCoding;
+    }
+
     // Terminal emulators
     if is_terminal(&app) {
         return ActivityCategory::ManualCoding;
@@ -75,6 +80,15 @@ fn has_ai_tool_in_title(title: &str) -> bool {
         || title.contains("v0")
         || title.contains("bolt")
         || title.contains("replit")
+}
+
+fn has_terminal_editor_in_title(title: &str) -> bool {
+    title.contains("nvim")
+        || title.contains("vim")
+        || title.contains("helix")
+        || title.contains("kakoune")
+        || title.contains("nano")
+        || title.contains("emacs")
 }
 
 fn is_code_editor(app: &str) -> bool {
