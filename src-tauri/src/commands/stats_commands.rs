@@ -1,6 +1,6 @@
 use tauri::State;
 
-use crate::db::models::{DailySummary, Session, SessionStats};
+use crate::db::models::{ActivityEntry, DailySummary, Session, SessionStats};
 use crate::db::queries;
 use crate::db::DbState;
 use crate::error::AppError;
@@ -24,4 +24,14 @@ pub fn get_recent_sessions(
 ) -> Result<Vec<Session>, AppError> {
     let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
     queries::get_recent_sessions(&conn, limit.unwrap_or(10))
+}
+
+#[tauri::command]
+pub fn get_recent_activity(
+    db: State<DbState>,
+    session_id: i64,
+    limit: Option<i64>,
+) -> Result<Vec<ActivityEntry>, AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::get_recent_activity(&conn, session_id, limit.unwrap_or(20))
 }

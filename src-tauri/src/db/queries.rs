@@ -1,7 +1,7 @@
 use chrono::{Local, Utc};
 use rusqlite::{params, Connection};
 
-use super::models::{DailySummary, Session, SessionStats};
+use super::models::{ActivityEntry, DailySummary, Session, SessionStats};
 use crate::error::AppError;
 
 pub fn create_session(conn: &Connection) -> Result<Session, AppError> {
@@ -183,6 +183,34 @@ pub fn get_recent_sessions(conn: &Connection, limit: i64) -> Result<Vec<Session>
         })?
         .collect::<Result<Vec<_>, _>>()?;
     Ok(sessions)
+}
+
+pub fn get_recent_activity(
+    conn: &Connection,
+    session_id: i64,
+    limit: i64,
+) -> Result<Vec<ActivityEntry>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT id, session_id, timestamp, app_name, window_title, category, duration_secs
+         FROM activity_entries
+         WHERE session_id = ?1
+         ORDER BY id DESC
+         LIMIT ?2",
+    )?;
+    let entries = stmt
+        .query_map(params![session_id, limit], |row| {
+            Ok(ActivityEntry {
+                id: row.get(0)?,
+                session_id: row.get(1)?,
+                timestamp: row.get(2)?,
+                app_name: row.get(3)?,
+                window_title: row.get(4)?,
+                category: row.get(5)?,
+                duration_secs: row.get(6)?,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(entries)
 }
 
 fn update_session_duration(conn: &Connection, session_id: i64) -> Result<(), AppError> {

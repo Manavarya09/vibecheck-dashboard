@@ -21,6 +21,7 @@
   import TodaySummary from "./components/TodaySummary.svelte";
   import ActivityBreakdown from "./components/ActivityBreakdown.svelte";
   import RecentSessions from "./components/RecentSessions.svelte";
+  import ActivityFeed from "./components/ActivityFeed.svelte";
 
   onMount(async () => {
     try {
@@ -69,6 +70,7 @@
     <div class="col-main">
       <CurrentSession />
       <ActivityBreakdown />
+      <ActivityFeed />
     </div>
     <div class="col-side">
       <TodaySummary />

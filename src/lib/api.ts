@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Session, DailySummary, SessionStats } from "./types";
+import type { Session, DailySummary, SessionStats, ActivityEntry } from "./types";
 
 export async function startSession(): Promise<Session> {
   return invoke("start_session");
@@ -31,4 +31,11 @@ export async function getTodaySummary(): Promise<DailySummary> {
 
 export async function getRecentSessions(limit?: number): Promise<Session[]> {
   return invoke("get_recent_sessions", { limit: limit ?? 10 });
+}
+
+export async function getRecentActivity(
+  sessionId: number,
+  limit?: number
+): Promise<ActivityEntry[]> {
+  return invoke("get_recent_activity", { sessionId, limit: limit ?? 20 });
 }

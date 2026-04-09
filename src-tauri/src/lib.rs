@@ -26,6 +26,7 @@ pub fn run() {
             stats_commands::get_session_stats,
             stats_commands::get_today_summary,
             stats_commands::get_recent_sessions,
+            stats_commands::get_recent_activity,
         ])
         .setup(|app| {
             let data_dir = app
