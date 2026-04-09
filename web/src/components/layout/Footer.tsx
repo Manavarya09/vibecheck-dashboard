@@ -19,17 +19,17 @@ export function Footer() {
             </p>
             <ul className="space-y-2 text-sm text-navy-light">
               <li>
-                <a href={`https://github.com/${GITHUB_REPO}`} className="hover:text-terracotta transition-colors">
+                <a href={`https://github.com/${GITHUB_REPO}`} className="hover:text-terracotta transition-colors duration-200 underline-offset-4 hover:underline">
                   GitHub Repository
                 </a>
               </li>
               <li>
-                <a href={`https://github.com/${GITHUB_REPO}/releases`} className="hover:text-terracotta transition-colors">
+                <a href={`https://github.com/${GITHUB_REPO}/releases`} className="hover:text-terracotta transition-colors duration-200 underline-offset-4 hover:underline">
                   Download for macOS
                 </a>
               </li>
               <li>
-                <a href={`https://github.com/${GITHUB_REPO}/issues`} className="hover:text-terracotta transition-colors">
+                <a href={`https://github.com/${GITHUB_REPO}/issues`} className="hover:text-terracotta transition-colors duration-200 underline-offset-4 hover:underline">
                   Report an Issue
                 </a>
               </li>
