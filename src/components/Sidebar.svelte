@@ -1,0 +1,179 @@
+<script lang="ts">
+  import { currentSession, todaySummary } from "../lib/stores";
+  import { startSession, stopSession, pauseSession, resumeSession } from "../lib/api";
+  import { formatDuration } from "../lib/utils";
+
+  let loading = $state(false);
+  let session = $derived($currentSession);
+  let isActive = $derived(session?.status === "active");
+  let isPaused = $derived(session?.status === "paused");
+  let hasSession = $derived(session != null);
+  let todayTotal = $derived($todaySummary?.totalSecs ?? 0);
+
+  async function handleStart() {
+    loading = true;
+    try {
+      const s = await startSession();
+      currentSession.set(s);
+    } catch (e) {
+      console.error("Failed to start session:", e);
+    }
+    loading = false;
+  }
+
+  async function handleStop() {
+    loading = true;
+    try {
+      await stopSession();
+      currentSession.set(null);
+    } catch (e) {
+      console.error("Failed to stop session:", e);
+    }
+    loading = false;
+  }
+
+  async function handlePause() {
+    try {
+      await pauseSession();
+      if (session) {
+        currentSession.set({ ...session, status: "paused" });
+      }
+    } catch (e) {
+      console.error("Failed to pause session:", e);
+    }
+  }
+
+  async function handleResume() {
+    try {
+      await resumeSession();
+      if (session) {
+        currentSession.set({ ...session, status: "active" });
+      }
+    } catch (e) {
+      console.error("Failed to resume session:", e);
+    }
+  }
+</script>
+
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="brand">
+      <h1 class="brand-name">VibeCheck</h1>
+      <p class="brand-tagline">Developer Wellness</p>
+    </div>
+
+    <div class="controls">
+      {#if !hasSession}
+        <button class="btn btn-primary" onclick={handleStart} disabled={loading}>
+          Start Session
+        </button>
+      {:else}
+        {#if isActive}
+          <button class="btn btn-secondary" onclick={handlePause}>
+            Pause
+          </button>
+        {:else if isPaused}
+          <button class="btn btn-primary" onclick={handleResume}>
+            Resume
+          </button>
+        {/if}
+        <button class="btn btn-danger" onclick={handleStop} disabled={loading}>
+          Stop
+        </button>
+      {/if}
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="today-glance">
+      <span class="today-label">Today</span>
+      <span class="today-value">{formatDuration(todayTotal)}</span>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .brand {
+    margin-bottom: 32px;
+  }
+  .brand-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .brand-tagline {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+  .btn-danger {
+    background: none;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: var(--danger);
+    color: white;
+  }
+  .sidebar-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  .today-glance {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .today-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .today-value {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+</style>
