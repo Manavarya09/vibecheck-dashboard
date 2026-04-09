@@ -32,7 +32,7 @@ export function SectionWrapper({
   return (
     <motion.section
       id={id}
-      className={cn("py-24 md:py-32 px-6", className)}
+      className={cn("py-20 md:py-28 lg:py-32 px-6 md:px-8", className)}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
