@@ -31,7 +31,7 @@ export function TextReveal({ text, className, delay = 0 }: TextRevealProps) {
               transition: {
                 duration: 0.4,
                 delay: delay + i * 0.03,
-                ease: [0.25, 0.4, 0.25, 1],
+                ease: [0.25, 0.4, 0.25, 1] as const,
               },
             },
           }}

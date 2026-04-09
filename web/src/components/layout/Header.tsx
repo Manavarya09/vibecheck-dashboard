@@ -31,7 +31,7 @@ export function Header() {
       )}
       initial={{ y: -80 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
+      transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] as const }}
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="#" className="text-lg font-bold text-navy tracking-tight">

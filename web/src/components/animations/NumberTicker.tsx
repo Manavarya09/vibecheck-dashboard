@@ -31,7 +31,7 @@ export function NumberTicker({
     if (isInView) {
       animate(motionValue, value, {
         duration,
-        ease: [0.25, 0.4, 0.25, 1],
+        ease: [0.25, 0.4, 0.25, 1] as const,
       });
     }
   }, [isInView, value, duration, motionValue]);
