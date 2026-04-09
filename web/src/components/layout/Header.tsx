@@ -13,6 +13,7 @@ const NAV_LINKS = [
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
@@ -54,7 +55,37 @@ export function Header() {
             GitHub
           </a>
         </nav>
+
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden text-sm font-semibold text-navy"
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? "Close" : "Menu"}
+        </button>
       </div>
+
+      {/* Mobile nav */}
+      {menuOpen && (
+        <motion.nav
+          className="md:hidden px-6 pb-4 flex flex-col gap-3 bg-cream/95 backdrop-blur-lg border-b border-border/50"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+        >
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className="text-sm text-navy-light hover:text-navy py-1"
+            >
+              {link.label}
+            </a>
+          ))}
+        </motion.nav>
+      )}
     </motion.header>
   );
 }
