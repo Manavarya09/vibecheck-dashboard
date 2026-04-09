@@ -106,6 +106,8 @@ fn has_ai_tool_in_title(title: &str) -> bool {
         || title.contains("v0")
         || title.contains("bolt")
         || title.contains("replit")
+        || title.contains("github copilot")
+        || title.contains("copilot chat")
 }
 
 fn has_ai_terminal_tool_in_title(title: &str) -> bool {
