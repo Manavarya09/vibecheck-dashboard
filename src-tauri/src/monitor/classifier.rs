@@ -310,4 +310,72 @@ mod tests {
             ActivityCategory::AiAssisted
         );
     }
+
+    #[test]
+    fn codeium_is_ai_assisted() {
+        assert_eq!(
+            classify(&window("Codeium", "project/main.rs")),
+            ActivityCategory::AiAssisted
+        );
+    }
+
+    #[test]
+    fn terminal_with_claude_code_title_is_ai_assisted() {
+        assert_eq!(
+            classify(&window("Terminal", "claude ~/project")),
+            ActivityCategory::AiAssisted
+        );
+        assert_eq!(
+            classify(&window("iTerm2", "aider main.py")),
+            ActivityCategory::AiAssisted
+        );
+    }
+
+    #[test]
+    fn terminal_with_nvim_is_manual() {
+        assert_eq!(
+            classify(&window("iTerm2", "nvim src/main.rs")),
+            ActivityCategory::ManualCoding
+        );
+    }
+
+    #[test]
+    fn jetbrains_is_manual_coding() {
+        assert_eq!(
+            classify(&window("IntelliJ IDEA", "Main.java")),
+            ActivityCategory::ManualCoding
+        );
+        assert_eq!(
+            classify(&window("PyCharm", "app.py")),
+            ActivityCategory::ManualCoding
+        );
+        assert_eq!(
+            classify(&window("RustRover", "lib.rs")),
+            ActivityCategory::ManualCoding
+        );
+    }
+
+    #[test]
+    fn jetbrains_ai_assistant_is_ai_assisted() {
+        assert_eq!(
+            classify(&window("IntelliJ IDEA", "AI Assistant - Main.java")),
+            ActivityCategory::AiAssisted
+        );
+    }
+
+    #[test]
+    fn ghostty_terminal_is_manual() {
+        assert_eq!(
+            classify(&window("Ghostty", "~/code")),
+            ActivityCategory::ManualCoding
+        );
+    }
+
+    #[test]
+    fn browser_with_replit_is_ai_assisted() {
+        assert_eq!(
+            classify(&window("Google Chrome", "Replit - main.py")),
+            ActivityCategory::AiAssisted
+        );
+    }
 }
