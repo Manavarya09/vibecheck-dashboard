@@ -1,10 +1,17 @@
 import { defineConfig } from "vite";
+import path from "path";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async () => ({
   plugins: [svelte()],
+  resolve: {
+    alias: {
+      "$lib": path.resolve("./src/lib"),
+      "$components": path.resolve("./src/components"),
+    },
+  },
   clearScreen: false,
   server: {
     port: 1420,
