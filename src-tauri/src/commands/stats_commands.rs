@@ -35,3 +35,8 @@ pub fn get_recent_activity(
     let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
     queries::get_recent_activity(&conn, session_id, limit.unwrap_or(20))
 }
+
+#[tauri::command]
+pub fn get_app_version() -> String {
+    env!("CARGO_PKG_VERSION").to_string()
+}
