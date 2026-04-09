@@ -85,6 +85,8 @@ fn is_ai_coding_app(app: &str) -> bool {
         || app.contains("windsurf")
         || app.contains("codeium")
         || app.contains("amazon q")
+        || app.contains("supermaven")
+        || app.contains("tabnine")
 }
 
 fn is_browser(app: &str) -> bool {
