@@ -1,4 +1,4 @@
-use super::detector::DetectedWindow;
+use super::detector::{has_ai_child_process, DetectedWindow};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ActivityCategory {
@@ -42,18 +42,24 @@ pub fn classify(window: &DetectedWindow) -> ActivityCategory {
         return ActivityCategory::ManualCoding;
     }
 
-    // Terminal with AI coding tools (Claude Code, aider, etc.)
-    if is_terminal(&app) && has_ai_terminal_tool_in_title(&title) {
-        return ActivityCategory::AiAssisted;
-    }
-
-    // Terminal-based editors (Neovim, Vim, Helix, etc.)
-    if is_terminal(&app) && has_terminal_editor_in_title(&title) {
-        return ActivityCategory::ManualCoding;
-    }
-
-    // Terminal emulators (plain terminal usage)
+    // Terminal detection (multi-layered)
     if is_terminal(&app) {
+        // Layer 1: Check window title for AI tools (requires Screen Recording)
+        if has_ai_terminal_tool_in_title(&title) {
+            return ActivityCategory::AiAssisted;
+        }
+
+        // Layer 2: Check child processes for AI tools (no permissions needed)
+        if has_ai_child_process(window.process_id).is_some() {
+            return ActivityCategory::AiAssisted;
+        }
+
+        // Layer 3: Check window title for terminal editors
+        if has_terminal_editor_in_title(&title) {
+            return ActivityCategory::ManualCoding;
+        }
+
+        // Default: terminal is manual coding
         return ActivityCategory::ManualCoding;
     }
 
@@ -152,6 +158,7 @@ mod tests {
         DetectedWindow {
             app_name: app.to_string(),
             window_title: title.to_string(),
+            process_id: 0, // tests don't use process-based detection
         }
     }
 
