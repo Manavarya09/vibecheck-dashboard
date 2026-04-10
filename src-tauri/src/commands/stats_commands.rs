@@ -85,3 +85,10 @@ pub fn remove_session_tag(db: State<DbState>, session_id: i64, tag: String) -> R
     let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
     queries::remove_session_tag(&conn, session_id, &tag)
 }
+
+#[tauri::command]
+pub fn get_db_path(app_handle: tauri::AppHandle) -> Result<String, AppError> {
+    let data_dir = app_handle.path().app_data_dir()
+        .map_err(|e| AppError::Session(e.to_string()))?;
+    Ok(data_dir.join("vibecheck.db").to_string_lossy().to_string())
+}

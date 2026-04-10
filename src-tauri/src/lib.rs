@@ -80,6 +80,7 @@ pub fn run() {
             stats_commands::add_session_tag,
             stats_commands::get_session_tags,
             stats_commands::remove_session_tag,
+            stats_commands::get_db_path,
             spending_commands::get_spending_rates,
             spending_commands::upsert_spending_rate,
             spending_commands::delete_spending_rate,

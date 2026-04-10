@@ -101,3 +101,8 @@ export async function upsertSpendingRate(toolName: string, rateType: string, rat
 export async function deleteSpendingRate(id: number): Promise<void> {
   return invoke("delete_spending_rate", { id });
 }
+
+
+export async function getDbPath(): Promise<string> {
+  return invoke("get_db_path");
+}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getSettings, updateSetting, resetSettings, exportData } from "../lib/api";
+  import { getSettings, updateSetting, resetSettings, exportData, getDbPath } from "../lib/api";
   import { onMount } from "svelte";
 
   let settings = $state<Record<string, string>>({});
@@ -108,6 +108,11 @@
   ];
 
   let exporting = $state(false);
+  let dbPath = $state("");
+
+  async function showDbPath() {
+    dbPath = await getDbPath();
+  }
 
   async function handleExport(format: "json" | "csv") {
     exporting = true;
@@ -171,6 +176,12 @@
           </div>
         </div>
       {/each}
+    </div>
+
+    <div class="export-section">
+      <h3 class="export-title">Database</h3>
+      <p class="export-desc">Your data is stored locally. Back up the database file to keep it safe.</p>
+      <button class="export-btn" onclick={showDbPath}>Show Database Location</button>
     </div>
 
     <div class="export-section">
