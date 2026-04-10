@@ -55,3 +55,33 @@ pub fn get_historical_stats(
     let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
     queries::get_daily_summaries(&conn, days)
 }
+
+#[tauri::command]
+pub fn add_session_note(db: State<DbState>, session_id: i64, note: String) -> Result<(), AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::add_session_note(&conn, session_id, &note)
+}
+
+#[tauri::command]
+pub fn get_session_notes(db: State<DbState>, session_id: i64) -> Result<Vec<(i64, String, String)>, AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::get_session_notes(&conn, session_id)
+}
+
+#[tauri::command]
+pub fn add_session_tag(db: State<DbState>, session_id: i64, tag: String) -> Result<(), AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::add_session_tag(&conn, session_id, &tag)
+}
+
+#[tauri::command]
+pub fn get_session_tags(db: State<DbState>, session_id: i64) -> Result<Vec<String>, AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::get_session_tags(&conn, session_id)
+}
+
+#[tauri::command]
+pub fn remove_session_tag(db: State<DbState>, session_id: i64, tag: String) -> Result<(), AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::remove_session_tag(&conn, session_id, &tag)
+}

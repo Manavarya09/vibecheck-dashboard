@@ -547,3 +547,49 @@ pub fn upsert_budget(conn: &Connection, period: &str, limit_amount: f64) -> Resu
     )?;
     Ok(())
 }
+
+// --- Notes & Tags ---
+
+pub fn add_session_note(conn: &Connection, session_id: i64, note: &str) -> Result<(), AppError> {
+    let now = Utc::now().to_rfc3339();
+    conn.execute(
+        "INSERT INTO session_notes (session_id, note, created_at) VALUES (?1, ?2, ?3)",
+        params![session_id, note, now],
+    )?;
+    Ok(())
+}
+
+pub fn get_session_notes(conn: &Connection, session_id: i64) -> Result<Vec<(i64, String, String)>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT id, note, created_at FROM session_notes WHERE session_id = ?1 ORDER BY id DESC"
+    )?;
+    let rows = stmt.query_map(params![session_id], |row| {
+        Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?))
+    })?.collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
+pub fn add_session_tag(conn: &Connection, session_id: i64, tag: &str) -> Result<(), AppError> {
+    conn.execute(
+        "INSERT OR IGNORE INTO session_tags (session_id, tag) VALUES (?1, ?2)",
+        params![session_id, tag],
+    )?;
+    Ok(())
+}
+
+pub fn get_session_tags(conn: &Connection, session_id: i64) -> Result<Vec<String>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT tag FROM session_tags WHERE session_id = ?1 ORDER BY tag"
+    )?;
+    let rows = stmt.query_map(params![session_id], |row| row.get::<_, String>(0))?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
+pub fn remove_session_tag(conn: &Connection, session_id: i64, tag: &str) -> Result<(), AppError> {
+    conn.execute(
+        "DELETE FROM session_tags WHERE session_id = ?1 AND tag = ?2",
+        params![session_id, tag],
+    )?;
+    Ok(())
+}
