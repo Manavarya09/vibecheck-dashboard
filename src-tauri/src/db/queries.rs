@@ -520,3 +520,30 @@ pub fn delete_spending_rate(conn: &Connection, id: i64) -> Result<(), AppError> 
     conn.execute("DELETE FROM spending_rates WHERE id = ?1", params![id])?;
     Ok(())
 }
+
+// --- Budget ---
+
+pub fn get_budget_configs(conn: &Connection) -> Result<Vec<(i64, String, f64, bool)>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT id, period, limit_amount, enabled FROM budget_config ORDER BY id"
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, i64>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, f64>(2)?,
+            row.get::<_, bool>(3)?,
+        ))
+    })?.collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
+pub fn upsert_budget(conn: &Connection, period: &str, limit_amount: f64) -> Result<(), AppError> {
+    conn.execute(
+        "INSERT INTO budget_config (period, limit_amount, enabled)
+         VALUES (?1, ?2, 1)
+         ON CONFLICT(id) DO UPDATE SET limit_amount = ?2",
+        params![period, limit_amount],
+    )?;
+    Ok(())
+}
