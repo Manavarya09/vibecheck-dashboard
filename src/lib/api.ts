@@ -39,3 +39,15 @@ export async function getRecentActivity(
 ): Promise<ActivityEntry[]> {
   return invoke("get_recent_activity", { sessionId, limit: limit ?? 20 });
 }
+
+export async function getSettings(): Promise<Record<string, string>> {
+  return invoke("get_settings");
+}
+
+export async function updateSetting(key: string, value: string): Promise<void> {
+  return invoke("update_setting", { key, value });
+}
+
+export async function resetSettings(): Promise<Record<string, string>> {
+  return invoke("reset_settings");
+}

@@ -11,6 +11,12 @@
   import { liveUpdate } from "../lib/stores";
   import { formatDuration, pct } from "../lib/utils";
 
+  interface Props {
+    onNavigate: (view: "dashboard" | "settings") => void;
+    currentView: "dashboard" | "settings";
+  }
+
+  let { onNavigate, currentView }: Props = $props();
   let loading = $state(false);
   let session = $derived($currentSession);
   let isActive = $derived(session?.status === "active");
@@ -110,6 +116,22 @@
   </div>
 
   <div class="sidebar-bottom">
+    <div class="nav-row">
+      <button
+        class="nav-link"
+        class:active={currentView === "dashboard"}
+        onclick={() => onNavigate("dashboard")}
+      >
+        Dashboard
+      </button>
+      <button
+        class="nav-link"
+        class:active={currentView === "settings"}
+        onclick={() => onNavigate("settings")}
+      >
+        Settings
+      </button>
+    </div>
     <div class="stat-row">
       <span class="stat-label">Today</span>
       <span class="stat-value">{formatDuration(todayTotal)}</span>
@@ -196,6 +218,29 @@
   .btn-danger:hover:not(:disabled) {
     background: var(--danger);
     color: white;
+  }
+  .nav-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .nav-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: color 0.15s;
+  }
+  .nav-link:hover {
+    color: var(--text);
+  }
+  .nav-link.active {
+    color: var(--primary);
   }
   .sidebar-bottom {
     border-top: 1px solid var(--border);

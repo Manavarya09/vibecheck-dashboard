@@ -22,6 +22,9 @@
   import ActivityBreakdown from "./components/ActivityBreakdown.svelte";
   import RecentSessions from "./components/RecentSessions.svelte";
   import ActivityFeed from "./components/ActivityFeed.svelte";
+  import Settings from "./components/Settings.svelte";
+
+  let view = $state<"dashboard" | "settings">("dashboard");
 
   onMount(async () => {
     try {
@@ -37,7 +40,7 @@
       console.error("Failed to load initial data:", e);
     }
 
-    const unlisten = await listen<SessionUpdate>(
+    listen<SessionUpdate>(
       "session-update",
       (event) => {
         liveUpdate.set(event.payload);
@@ -57,26 +60,26 @@
         });
       }
     );
-
-    return () => {
-      unlisten();
-    };
   });
 </script>
 
-<Sidebar />
+<Sidebar onNavigate={(v) => view = v} currentView={view} />
 <main class="content">
-  <div class="grid">
-    <div class="col-main">
-      <CurrentSession />
-      <ActivityBreakdown />
-      <ActivityFeed />
+  {#if view === "settings"}
+    <Settings />
+  {:else}
+    <div class="grid">
+      <div class="col-main">
+        <CurrentSession />
+        <ActivityBreakdown />
+        <ActivityFeed />
+      </div>
+      <div class="col-side">
+        <TodaySummary />
+        <RecentSessions />
+      </div>
     </div>
-    <div class="col-side">
-      <TodaySummary />
-      <RecentSessions />
-    </div>
-  </div>
+  {/if}
 </main>
 
 <style>

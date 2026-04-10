@@ -10,6 +10,7 @@ use std::sync::Arc;
 use tauri::Manager;
 
 use commands::session_commands;
+use commands::settings_commands;
 use commands::stats_commands;
 use db::connection;
 use monitor::session::MonitorState;
@@ -34,6 +35,9 @@ pub fn run() {
             stats_commands::get_recent_sessions,
             stats_commands::get_recent_activity,
             stats_commands::get_app_version,
+            settings_commands::get_settings,
+            settings_commands::update_setting,
+            settings_commands::reset_settings,
         ])
         .setup(|app| {
             let data_dir = app
@@ -43,8 +47,17 @@ pub fn run() {
 
             let db_state =
                 connection::init_db(data_dir).expect("failed to initialize database");
+
+            // Load settings into cache
+            let initial_settings = {
+                let conn = db_state.conn.lock().expect("db lock");
+                crate::db::queries::get_all_settings(&conn).unwrap_or_default()
+            };
+            let settings_state = Arc::new(settings_commands::SettingsState::new(initial_settings));
+
             app.manage(db_state);
             app.manage(Arc::new(MonitorState::default()));
+            app.manage(settings_state);
 
             tray::setup_tray(app)?;
 

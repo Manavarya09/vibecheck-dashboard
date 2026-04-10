@@ -252,9 +252,6 @@ pub fn upsert_daily_summary(conn: &Connection) -> Result<(), AppError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::connection;
-    use std::path::PathBuf;
-    use tempfile::tempdir;
 
     fn test_db() -> Connection {
         let conn = Connection::open_in_memory().unwrap();
@@ -286,6 +283,11 @@ mod tests {
                 manual_coding_secs INTEGER NOT NULL DEFAULT 0,
                 non_coding_secs INTEGER NOT NULL DEFAULT 0,
                 session_count INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             );"
         ).unwrap();
         conn
@@ -370,12 +372,75 @@ mod tests {
     }
 
     #[test]
+    fn settings_crud() {
+        let conn = test_db();
+        // Seed settings
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT INTO settings (key, value, updated_at) VALUES ('test_key', '42', ?1)",
+            rusqlite::params![now],
+        ).unwrap();
+
+        let all = get_all_settings(&conn).unwrap();
+        assert_eq!(all.get("test_key").unwrap(), "42");
+
+        let val = get_setting(&conn, "test_key").unwrap();
+        assert_eq!(val, "42");
+
+        update_setting(&conn, "test_key", "99").unwrap();
+        let val2 = get_setting(&conn, "test_key").unwrap();
+        assert_eq!(val2, "99");
+    }
+
+    #[test]
+    fn update_nonexistent_setting_fails() {
+        let conn = test_db();
+        let result = update_setting(&conn, "no_such_key", "value");
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn today_summary_empty() {
         let conn = test_db();
         let summary = get_today_summary(&conn).unwrap();
         assert_eq!(summary.total_secs, 0);
         assert_eq!(summary.session_count, 0);
     }
+}
+
+// --- Settings ---
+
+pub fn get_all_settings(conn: &Connection) -> Result<std::collections::HashMap<String, String>, AppError> {
+    let mut stmt = conn.prepare("SELECT key, value FROM settings")?;
+    let mut map = std::collections::HashMap::new();
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+    })?;
+    for row in rows {
+        let (k, v) = row?;
+        map.insert(k, v);
+    }
+    Ok(map)
+}
+
+pub fn update_setting(conn: &Connection, key: &str, value: &str) -> Result<(), AppError> {
+    let now = Utc::now().to_rfc3339();
+    let rows = conn.execute(
+        "UPDATE settings SET value = ?1, updated_at = ?2 WHERE key = ?3",
+        params![value, now, key],
+    )?;
+    if rows == 0 {
+        return Err(AppError::Session(format!("Unknown setting: {}", key)));
+    }
+    Ok(())
+}
+
+pub fn get_setting(conn: &Connection, key: &str) -> Result<String, AppError> {
+    conn.query_row(
+        "SELECT value FROM settings WHERE key = ?1",
+        params![key],
+        |row| row.get(0),
+    ).map_err(|e| AppError::Database(e))
 }
 
 pub fn get_database_stats(conn: &Connection) -> Result<(i64, i64, i64), AppError> {
