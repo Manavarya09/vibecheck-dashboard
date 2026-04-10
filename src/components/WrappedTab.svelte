@@ -18,7 +18,7 @@
 
   let totalSecs = $derived(data.reduce((s, d) => s + d.totalSecs, 0));
   let aiSecs = $derived(data.reduce((s, d) => s + d.aiAssistedSecs, 0));
-  let manualSecs = $derived(data.reduce((s, d) => s + d.manualCodingSecs, 0));
+
   let sessionCount = $derived(data.reduce((s, d) => s + d.sessionCount, 0));
   let activeDays = $derived(data.filter(d => d.totalSecs > 0).length);
   let longestDay = $derived(

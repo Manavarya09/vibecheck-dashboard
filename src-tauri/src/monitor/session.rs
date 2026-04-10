@@ -5,13 +5,13 @@ use tauri::tray::TrayIconId;
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::time::{interval, Duration};
 
-use log::{debug, info, warn};
 use super::classifier;
 use super::detector;
 use crate::commands::settings_commands::SettingsState;
 use crate::db::models::SessionUpdate;
 use crate::db::queries;
 use crate::db::DbState;
+use log::{debug, info, warn};
 
 use std::sync::atomic::AtomicI64;
 
@@ -58,7 +58,8 @@ pub fn start_monitoring(app_handle: AppHandle) {
                 if state.auto_paused.load(Ordering::SeqCst) {
                     if let Some(idle_secs) = detector::get_idle_seconds() {
                         if let Some(settings) = handle.try_state::<Arc<SettingsState>>() {
-                            let threshold = settings.get_i64("idle_threshold_mins").unwrap_or(5) * 60;
+                            let threshold =
+                                settings.get_i64("idle_threshold_mins").unwrap_or(5) * 60;
                             if (idle_secs as i64) < threshold {
                                 state.is_paused.store(false, Ordering::SeqCst);
                                 state.auto_paused.store(false, Ordering::SeqCst);
@@ -82,7 +83,10 @@ pub fn start_monitoring(app_handle: AppHandle) {
                 if let Some(settings) = handle.try_state::<Arc<SettingsState>>() {
                     let threshold = settings.get_i64("idle_threshold_mins").unwrap_or(5) * 60;
                     if (idle_secs as i64) >= threshold {
-                        info!("Auto-pausing: {}s idle exceeds {}s threshold", idle_secs, threshold);
+                        info!(
+                            "Auto-pausing: {}s idle exceeds {}s threshold",
+                            idle_secs, threshold
+                        );
                         state.is_paused.store(true, Ordering::SeqCst);
                         state.auto_paused.store(true, Ordering::SeqCst);
                         let _ = handle.emit("session-auto-paused", ());
@@ -146,7 +150,10 @@ pub fn start_monitoring(app_handle: AppHandle) {
                     manual_coding_secs: stats.manual_coding_secs,
                     non_coding_secs: stats.non_coding_secs,
                 };
-                debug!("Session update: {}s total, {} active", update.duration_secs, update.current_app);
+                debug!(
+                    "Session update: {}s total, {} active",
+                    update.duration_secs, update.current_app
+                );
                 let _ = handle.emit("session-update", &update);
 
                 // Update tray tooltip with session duration
@@ -158,9 +165,7 @@ pub fn start_monitoring(app_handle: AppHandle) {
                 } else {
                     format!("VibeCheck  {}m", m)
                 };
-                if let Some(tray) =
-                    handle.tray_by_id(&TrayIconId::new("main-tray"))
-                {
+                if let Some(tray) = handle.tray_by_id(&TrayIconId::new("main-tray")) {
                     let _ = tray.set_tooltip(Some(&tooltip));
                 }
             }
@@ -178,12 +183,18 @@ pub fn start_monitoring(app_handle: AppHandle) {
                     let threshold = interval_mins * 60;
 
                     if enabled && threshold > 0 && current >= threshold {
-                        info!("Break reminder triggered after {}s of continuous AI coding", current);
+                        info!(
+                            "Break reminder triggered after {}s of continuous AI coding",
+                            current
+                        );
                         let break_duration = settings.get_i64("break_duration_mins").unwrap_or(5);
-                        let _ = handle.emit("break-reminder", serde_json::json!({
-                            "continuousSecs": current,
-                            "breakDurationMins": break_duration,
-                        }));
+                        let _ = handle.emit(
+                            "break-reminder",
+                            serde_json::json!({
+                                "continuousSecs": current,
+                                "breakDurationMins": break_duration,
+                            }),
+                        );
                         monitor.continuous_ai_secs.store(0, Ordering::SeqCst);
                     }
                 }

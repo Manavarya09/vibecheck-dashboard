@@ -11,9 +11,9 @@ use std::sync::Arc;
 use tauri::{Emitter, Manager};
 
 use commands::export_commands;
-use commands::spending_commands;
 use commands::session_commands;
 use commands::settings_commands;
+use commands::spending_commands;
 use commands::stats_commands;
 use db::connection;
 use monitor::session::MonitorState;
@@ -38,7 +38,10 @@ fn set_autostart(app_handle: tauri::AppHandle, enabled: bool) -> Result<(), Stri
 #[tauri::command]
 fn get_autostart_enabled(app_handle: tauri::AppHandle) -> Result<bool, String> {
     use tauri_plugin_autostart::ManagerExt;
-    app_handle.autolaunch().is_enabled().map_err(|e| e.to_string())
+    app_handle
+        .autolaunch()
+        .is_enabled()
+        .map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -93,8 +96,7 @@ pub fn run() {
                 .app_data_dir()
                 .expect("failed to resolve app data directory");
 
-            let db_state =
-                connection::init_db(data_dir).expect("failed to initialize database");
+            let db_state = connection::init_db(data_dir).expect("failed to initialize database");
 
             // Load settings into cache
             let initial_settings = {
@@ -109,7 +111,9 @@ pub fn run() {
 
             // Check screen recording permission on startup
             if !permissions::check_screen_recording() {
-                log::warn!("Screen Recording permission not granted -- window titles will be empty");
+                log::warn!(
+                    "Screen Recording permission not granted -- window titles will be empty"
+                );
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.emit("permission-missing", "screen_recording");
                 }

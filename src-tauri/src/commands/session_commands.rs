@@ -10,11 +10,11 @@ use crate::error::AppError;
 use crate::monitor::session::{start_monitoring, MonitorState};
 
 #[tauri::command]
-pub fn start_session(
-    db: State<DbState>,
-    app_handle: AppHandle,
-) -> Result<Session, AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+pub fn start_session(db: State<DbState>, app_handle: AppHandle) -> Result<Session, AppError> {
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
 
     if let Some(existing) = queries::get_active_session(&conn)? {
         return Ok(existing);
@@ -29,7 +29,10 @@ pub fn start_session(
 
 #[tauri::command]
 pub fn stop_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
 
     if let Some(session) = queries::get_active_session(&conn)? {
         queries::end_session(&conn, session.id)?;
@@ -42,7 +45,10 @@ pub fn stop_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), App
 
 #[tauri::command]
 pub fn pause_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
 
     if let Some(session) = queries::get_active_session(&conn)? {
         queries::pause_session(&conn, session.id)?;
@@ -55,7 +61,10 @@ pub fn pause_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), Ap
 
 #[tauri::command]
 pub fn resume_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
 
     if let Some(session) = queries::get_active_session(&conn)? {
         queries::resume_session(&conn, session.id)?;
@@ -68,7 +77,10 @@ pub fn resume_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), A
 
 #[tauri::command]
 pub fn get_current_session(db: State<DbState>) -> Result<Option<Session>, AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
     queries::get_active_session(&conn)
 }
 

@@ -28,10 +28,13 @@ struct ExportActivity {
 
 #[tauri::command]
 pub fn export_data(db: State<DbState>, format: String) -> Result<String, AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
 
     let mut session_stmt = conn.prepare(
-        "SELECT id, started_at, ended_at, duration_secs, status FROM sessions ORDER BY id"
+        "SELECT id, started_at, ended_at, duration_secs, status FROM sessions ORDER BY id",
     )?;
 
     let sessions: Vec<ExportSession> = session_stmt
@@ -46,10 +49,12 @@ pub fn export_data(db: State<DbState>, format: String) -> Result<String, AppErro
         })?
         .filter_map(|r| r.ok())
         .map(|(id, started_at, ended_at, duration_secs, status)| {
-            let mut act_stmt = conn.prepare(
-                "SELECT timestamp, app_name, window_title, category, duration_secs
-                 FROM activity_entries WHERE session_id = ?1 ORDER BY id"
-            ).unwrap();
+            let mut act_stmt = conn
+                .prepare(
+                    "SELECT timestamp, app_name, window_title, category, duration_secs
+                 FROM activity_entries WHERE session_id = ?1 ORDER BY id",
+                )
+                .unwrap();
 
             let activities: Vec<ExportActivity> = act_stmt
                 .query_map(params![id], |row| {
@@ -78,8 +83,7 @@ pub fn export_data(db: State<DbState>, format: String) -> Result<String, AppErro
 
     match format.as_str() {
         "csv" => Ok(to_csv(&sessions)),
-        _ => serde_json::to_string_pretty(&sessions)
-            .map_err(|e| AppError::Session(e.to_string())),
+        _ => serde_json::to_string_pretty(&sessions).map_err(|e| AppError::Session(e.to_string())),
     }
 }
 

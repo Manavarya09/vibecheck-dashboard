@@ -288,8 +288,9 @@ mod tests {
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL,
                 updated_at TEXT NOT NULL
-            );"
-        ).unwrap();
+            );",
+        )
+        .unwrap();
         conn
     }
 
@@ -379,7 +380,8 @@ mod tests {
         conn.execute(
             "INSERT INTO settings (key, value, updated_at) VALUES ('test_key', '42', ?1)",
             rusqlite::params![now],
-        ).unwrap();
+        )
+        .unwrap();
 
         let all = get_all_settings(&conn).unwrap();
         assert_eq!(all.get("test_key").unwrap(), "42");
@@ -410,7 +412,10 @@ mod tests {
 
 // --- Historical ---
 
-pub fn get_daily_summaries(conn: &Connection, days: i64) -> Result<Vec<super::models::DailySummary>, AppError> {
+pub fn get_daily_summaries(
+    conn: &Connection,
+    days: i64,
+) -> Result<Vec<super::models::DailySummary>, AppError> {
     let mut stmt = conn.prepare(
         "SELECT date, total_secs, ai_assisted_secs, manual_coding_secs, non_coding_secs, session_count
          FROM daily_summaries
@@ -435,7 +440,9 @@ pub fn get_daily_summaries(conn: &Connection, days: i64) -> Result<Vec<super::mo
 
 // --- Settings ---
 
-pub fn get_all_settings(conn: &Connection) -> Result<std::collections::HashMap<String, String>, AppError> {
+pub fn get_all_settings(
+    conn: &Connection,
+) -> Result<std::collections::HashMap<String, String>, AppError> {
     let mut stmt = conn.prepare("SELECT key, value FROM settings")?;
     let mut map = std::collections::HashMap::new();
     let rows = stmt.query_map([], |row| {
@@ -460,52 +467,56 @@ pub fn update_setting(conn: &Connection, key: &str, value: &str) -> Result<(), A
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn get_setting(conn: &Connection, key: &str) -> Result<String, AppError> {
     conn.query_row(
         "SELECT value FROM settings WHERE key = ?1",
         params![key],
         |row| row.get(0),
-    ).map_err(|e| AppError::Database(e))
+    )
+    .map_err(AppError::Database)
 }
 
+#[allow(dead_code)]
 pub fn get_database_stats(conn: &Connection) -> Result<(i64, i64, i64), AppError> {
-    let sessions: i64 = conn.query_row(
-        "SELECT COUNT(*) FROM sessions",
-        [],
-        |row| row.get(0),
-    )?;
-    let activities: i64 = conn.query_row(
-        "SELECT COUNT(*) FROM activity_entries",
-        [],
-        |row| row.get(0),
-    )?;
-    let days: i64 = conn.query_row(
-        "SELECT COUNT(*) FROM daily_summaries",
-        [],
-        |row| row.get(0),
-    )?;
+    let sessions: i64 = conn.query_row("SELECT COUNT(*) FROM sessions", [], |row| row.get(0))?;
+    let activities: i64 = conn.query_row("SELECT COUNT(*) FROM activity_entries", [], |row| {
+        row.get(0)
+    })?;
+    let days: i64 = conn.query_row("SELECT COUNT(*) FROM daily_summaries", [], |row| row.get(0))?;
     Ok((sessions, activities, days))
 }
 
 // --- Spending ---
 
-pub fn get_spending_rates(conn: &Connection) -> Result<Vec<(i64, String, String, f64, Option<String>)>, AppError> {
+#[allow(clippy::type_complexity)]
+pub fn get_spending_rates(
+    conn: &Connection,
+) -> Result<Vec<(i64, String, String, f64, Option<String>)>, AppError> {
     let mut stmt = conn.prepare(
         "SELECT id, tool_name, rate_type, rate_value, billing_period FROM spending_rates ORDER BY tool_name"
     )?;
-    let rows = stmt.query_map([], |row| {
-        Ok((
-            row.get::<_, i64>(0)?,
-            row.get::<_, String>(1)?,
-            row.get::<_, String>(2)?,
-            row.get::<_, f64>(3)?,
-            row.get::<_, Option<String>>(4)?,
-        ))
-    })?.collect::<Result<Vec<_>, _>>()?;
+    let rows = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, f64>(3)?,
+                row.get::<_, Option<String>>(4)?,
+            ))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
 }
 
-pub fn upsert_spending_rate(conn: &Connection, tool_name: &str, rate_type: &str, rate_value: f64, billing_period: &str) -> Result<(), AppError> {
+pub fn upsert_spending_rate(
+    conn: &Connection,
+    tool_name: &str,
+    rate_type: &str,
+    rate_value: f64,
+    billing_period: &str,
+) -> Result<(), AppError> {
     let now = chrono::Utc::now().to_rfc3339();
     conn.execute(
         "INSERT INTO spending_rates (tool_name, rate_type, rate_value, billing_period, updated_at)
@@ -524,17 +535,18 @@ pub fn delete_spending_rate(conn: &Connection, id: i64) -> Result<(), AppError> 
 // --- Budget ---
 
 pub fn get_budget_configs(conn: &Connection) -> Result<Vec<(i64, String, f64, bool)>, AppError> {
-    let mut stmt = conn.prepare(
-        "SELECT id, period, limit_amount, enabled FROM budget_config ORDER BY id"
-    )?;
-    let rows = stmt.query_map([], |row| {
-        Ok((
-            row.get::<_, i64>(0)?,
-            row.get::<_, String>(1)?,
-            row.get::<_, f64>(2)?,
-            row.get::<_, bool>(3)?,
-        ))
-    })?.collect::<Result<Vec<_>, _>>()?;
+    let mut stmt =
+        conn.prepare("SELECT id, period, limit_amount, enabled FROM budget_config ORDER BY id")?;
+    let rows = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, f64>(2)?,
+                row.get::<_, bool>(3)?,
+            ))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
 }
 
@@ -559,13 +571,22 @@ pub fn add_session_note(conn: &Connection, session_id: i64, note: &str) -> Resul
     Ok(())
 }
 
-pub fn get_session_notes(conn: &Connection, session_id: i64) -> Result<Vec<(i64, String, String)>, AppError> {
+pub fn get_session_notes(
+    conn: &Connection,
+    session_id: i64,
+) -> Result<Vec<(i64, String, String)>, AppError> {
     let mut stmt = conn.prepare(
-        "SELECT id, note, created_at FROM session_notes WHERE session_id = ?1 ORDER BY id DESC"
+        "SELECT id, note, created_at FROM session_notes WHERE session_id = ?1 ORDER BY id DESC",
     )?;
-    let rows = stmt.query_map(params![session_id], |row| {
-        Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?))
-    })?.collect::<Result<Vec<_>, _>>()?;
+    let rows = stmt
+        .query_map(params![session_id], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
 }
 
@@ -578,10 +599,10 @@ pub fn add_session_tag(conn: &Connection, session_id: i64, tag: &str) -> Result<
 }
 
 pub fn get_session_tags(conn: &Connection, session_id: i64) -> Result<Vec<String>, AppError> {
-    let mut stmt = conn.prepare(
-        "SELECT tag FROM session_tags WHERE session_id = ?1 ORDER BY tag"
-    )?;
-    let rows = stmt.query_map(params![session_id], |row| row.get::<_, String>(0))?
+    let mut stmt =
+        conn.prepare("SELECT tag FROM session_tags WHERE session_id = ?1 ORDER BY tag")?;
+    let rows = stmt
+        .query_map(params![session_id], |row| row.get::<_, String>(0))?
         .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
 }

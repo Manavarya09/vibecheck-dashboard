@@ -181,19 +181,34 @@ mod tests {
 
     #[test]
     fn cursor_is_always_ai_assisted() {
-        assert_eq!(classify(&window("Cursor", "main.rs")), ActivityCategory::AiAssisted);
-        assert_eq!(classify(&window("cursor", "")), ActivityCategory::AiAssisted);
+        assert_eq!(
+            classify(&window("Cursor", "main.rs")),
+            ActivityCategory::AiAssisted
+        );
+        assert_eq!(
+            classify(&window("cursor", "")),
+            ActivityCategory::AiAssisted
+        );
     }
 
     #[test]
     fn claude_code_app_is_ai_assisted() {
-        assert_eq!(classify(&window("Claude", "")), ActivityCategory::AiAssisted);
-        assert_eq!(classify(&window("claude", "~/vibe-track")), ActivityCategory::AiAssisted);
+        assert_eq!(
+            classify(&window("Claude", "")),
+            ActivityCategory::AiAssisted
+        );
+        assert_eq!(
+            classify(&window("claude", "~/vibe-track")),
+            ActivityCategory::AiAssisted
+        );
     }
 
     #[test]
     fn windsurf_is_ai_assisted() {
-        assert_eq!(classify(&window("Windsurf", "main.rs")), ActivityCategory::AiAssisted);
+        assert_eq!(
+            classify(&window("Windsurf", "main.rs")),
+            ActivityCategory::AiAssisted
+        );
     }
 
     #[test]
@@ -242,10 +257,22 @@ mod tests {
 
     #[test]
     fn terminal_is_manual_coding() {
-        assert_eq!(classify(&window("Terminal", "zsh")), ActivityCategory::ManualCoding);
-        assert_eq!(classify(&window("iTerm2", "~")), ActivityCategory::ManualCoding);
-        assert_eq!(classify(&window("Warp", "cargo build")), ActivityCategory::ManualCoding);
-        assert_eq!(classify(&window("Ghostty", "~")), ActivityCategory::ManualCoding);
+        assert_eq!(
+            classify(&window("Terminal", "zsh")),
+            ActivityCategory::ManualCoding
+        );
+        assert_eq!(
+            classify(&window("iTerm2", "~")),
+            ActivityCategory::ManualCoding
+        );
+        assert_eq!(
+            classify(&window("Warp", "cargo build")),
+            ActivityCategory::ManualCoding
+        );
+        assert_eq!(
+            classify(&window("Ghostty", "~")),
+            ActivityCategory::ManualCoding
+        );
     }
 
     #[test]

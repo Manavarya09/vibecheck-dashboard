@@ -53,7 +53,10 @@ pub fn update_setting(
     key: String,
     value: String,
 ) -> Result<(), AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
     queries::update_setting(&conn, &key, &value)?;
 
     if let Ok(mut cache) = settings.cache.write() {
@@ -67,7 +70,10 @@ pub fn reset_settings(
     db: State<DbState>,
     settings: State<Arc<SettingsState>>,
 ) -> Result<HashMap<String, String>, AppError> {
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
 
     conn.execute("DELETE FROM settings", [])
         .map_err(AppError::Database)?;
@@ -75,7 +81,10 @@ pub fn reset_settings(
     drop(conn);
 
     // Re-seed defaults by re-initializing
-    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    let conn = db
+        .conn
+        .lock()
+        .map_err(|e| AppError::Session(e.to_string()))?;
     let now = chrono::Utc::now().to_rfc3339();
     let defaults = [
         ("polling_interval_secs", "5"),
@@ -91,7 +100,8 @@ pub fn reset_settings(
         conn.execute(
             "INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES (?1, ?2, ?3)",
             rusqlite::params![key, value, now],
-        ).map_err(AppError::Database)?;
+        )
+        .map_err(AppError::Database)?;
     }
 
     let all = queries::get_all_settings(&conn)?;

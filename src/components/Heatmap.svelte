@@ -100,8 +100,7 @@
             height={CELL_SIZE}
             rx="2"
             fill={getColor(hours)}
-            role="gridcell"
-            aria-label="{hours.toFixed(1)} hours on {dateKey}"
+            aria-hidden="true"
             onmouseenter={(e) => handleHover(week, day, e)}
             onmouseleave={clearHover}
           />

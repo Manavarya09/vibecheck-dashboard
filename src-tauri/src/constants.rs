@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// Polling interval for active window detection in seconds.
 pub const POLLING_INTERVAL_SECS: u64 = 5;
 

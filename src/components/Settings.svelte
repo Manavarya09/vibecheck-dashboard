@@ -182,6 +182,9 @@
       <h3 class="export-title">Database</h3>
       <p class="export-desc">Your data is stored locally. Back up the database file to keep it safe.</p>
       <button class="export-btn" onclick={showDbPath}>Show Database Location</button>
+      {#if dbPath}
+        <p class="db-path">{dbPath}</p>
+      {/if}
     </div>
 
     <div class="export-section">
@@ -359,5 +362,12 @@
   .export-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+  .db-path {
+    margin-top: 8px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    word-break: break-all;
   }
 </style>
