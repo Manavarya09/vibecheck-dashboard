@@ -18,16 +18,28 @@
   import type { SessionUpdate } from "./lib/types";
 
   import Sidebar from "./components/Sidebar.svelte";
+  import TabBar from "./components/TabBar.svelte";
   import CurrentSession from "./components/CurrentSession.svelte";
   import TodaySummary from "./components/TodaySummary.svelte";
   import ActivityBreakdown from "./components/ActivityBreakdown.svelte";
   import RecentSessions from "./components/RecentSessions.svelte";
   import ActivityFeed from "./components/ActivityFeed.svelte";
+  import AnalyticsTab from "./components/AnalyticsTab.svelte";
+  import SpendingTab from "./components/SpendingTab.svelte";
+  import WrappedTab from "./components/WrappedTab.svelte";
   import Settings from "./components/Settings.svelte";
   import BreakOverlay from "./components/BreakOverlay.svelte";
   import PermissionPrompt from "./components/PermissionPrompt.svelte";
 
   let view = $state<"dashboard" | "settings">("dashboard");
+  let activeTab = $state("overview");
+
+  const TABS = [
+    { id: "overview", label: "Overview" },
+    { id: "analytics", label: "Analytics" },
+    { id: "spending", label: "Spending" },
+    { id: "wrapped", label: "Wrapped" },
+  ];
 
   onMount(async () => {
     try {
@@ -83,17 +95,27 @@
   {#if view === "settings"}
     <Settings />
   {:else}
-    <div class="grid">
-      <div class="col-main">
-        <CurrentSession />
-        <ActivityBreakdown />
-        <ActivityFeed />
+    <TabBar tabs={TABS} active={activeTab} onSelect={(id) => activeTab = id} />
+
+    {#if activeTab === "overview"}
+      <div class="grid">
+        <div class="col-main">
+          <CurrentSession />
+          <ActivityBreakdown />
+          <ActivityFeed />
+        </div>
+        <div class="col-side">
+          <TodaySummary />
+          <RecentSessions />
+        </div>
       </div>
-      <div class="col-side">
-        <TodaySummary />
-        <RecentSessions />
-      </div>
-    </div>
+    {:else if activeTab === "analytics"}
+      <AnalyticsTab />
+    {:else if activeTab === "spending"}
+      <SpendingTab />
+    {:else if activeTab === "wrapped"}
+      <WrappedTab />
+    {/if}
   {/if}
 </main>
 
