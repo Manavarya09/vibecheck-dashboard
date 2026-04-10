@@ -8,6 +8,7 @@
     todaySummary,
     recentSessions,
     liveUpdate,
+    autoPaused,
   } from "./lib/stores";
   import {
     getCurrentSession,
@@ -40,6 +41,16 @@
     } catch (e) {
       console.error("Failed to load initial data:", e);
     }
+
+    listen("session-auto-paused", () => {
+      autoPaused.set(true);
+      currentSession.update((s) => s ? { ...s, status: "paused" } : s);
+    });
+
+    listen("session-auto-resumed", () => {
+      autoPaused.set(false);
+      currentSession.update((s) => s ? { ...s, status: "active" } : s);
+    });
 
     listen<SessionUpdate>(
       "session-update",

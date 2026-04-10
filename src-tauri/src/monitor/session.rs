@@ -18,6 +18,7 @@ use std::sync::atomic::AtomicI64;
 pub struct MonitorState {
     pub is_running: AtomicBool,
     pub is_paused: AtomicBool,
+    pub auto_paused: AtomicBool,
     pub continuous_ai_secs: AtomicI64,
 }
 
@@ -26,6 +27,7 @@ impl Default for MonitorState {
         Self {
             is_running: AtomicBool::new(false),
             is_paused: AtomicBool::new(false),
+            auto_paused: AtomicBool::new(false),
             continuous_ai_secs: AtomicI64::new(0),
         }
     }
@@ -49,11 +51,51 @@ pub fn start_monitoring(app_handle: AppHandle) {
             if !state.is_running.load(Ordering::SeqCst) {
                 break;
             }
+            let db = handle.state::<DbState>();
+
             if state.is_paused.load(Ordering::SeqCst) {
+                // Check if auto-paused and user has returned
+                if state.auto_paused.load(Ordering::SeqCst) {
+                    if let Some(idle_secs) = detector::get_idle_seconds() {
+                        if let Some(settings) = handle.try_state::<Arc<SettingsState>>() {
+                            let threshold = settings.get_i64("idle_threshold_mins").unwrap_or(5) * 60;
+                            if (idle_secs as i64) < threshold {
+                                state.is_paused.store(false, Ordering::SeqCst);
+                                state.auto_paused.store(false, Ordering::SeqCst);
+                                info!("Auto-resumed: user activity detected after idle");
+                                let _ = handle.emit("session-auto-resumed", ());
+
+                                if let Ok(conn) = db.conn.lock() {
+                                    if let Ok(Some(session)) = queries::get_active_session(&conn) {
+                                        let _ = queries::resume_session(&conn, session.id);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 continue;
             }
 
-            let db = handle.state::<DbState>();
+            // Check for idle -- auto-pause if threshold exceeded
+            if let Some(idle_secs) = detector::get_idle_seconds() {
+                if let Some(settings) = handle.try_state::<Arc<SettingsState>>() {
+                    let threshold = settings.get_i64("idle_threshold_mins").unwrap_or(5) * 60;
+                    if (idle_secs as i64) >= threshold {
+                        info!("Auto-pausing: {}s idle exceeds {}s threshold", idle_secs, threshold);
+                        state.is_paused.store(true, Ordering::SeqCst);
+                        state.auto_paused.store(true, Ordering::SeqCst);
+                        let _ = handle.emit("session-auto-paused", ());
+
+                        if let Ok(conn) = db.conn.lock() {
+                            if let Ok(Some(session)) = queries::get_active_session(&conn) {
+                                let _ = queries::pause_session(&conn, session.id);
+                            }
+                        }
+                        continue;
+                    }
+                }
+            }
             let conn = match db.conn.lock() {
                 Ok(c) => c,
                 Err(_) => continue,
