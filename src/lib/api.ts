@@ -80,3 +80,24 @@ export async function getHeatmapData(days?: number): Promise<DailySummary[]> {
 export async function getHistoricalStats(days: number): Promise<DailySummary[]> {
   return invoke("get_historical_stats", { days });
 }
+
+
+export interface SpendingRate {
+  id: number;
+  toolName: string;
+  rateType: string;
+  rateValue: number;
+  billingPeriod: string | null;
+}
+
+export async function getSpendingRates(): Promise<SpendingRate[]> {
+  return invoke("get_spending_rates");
+}
+
+export async function upsertSpendingRate(toolName: string, rateType: string, rateValue: number, billingPeriod: string): Promise<void> {
+  return invoke("upsert_spending_rate", { toolName, rateType, rateValue, billingPeriod });
+}
+
+export async function deleteSpendingRate(id: number): Promise<void> {
+  return invoke("delete_spending_rate", { id });
+}

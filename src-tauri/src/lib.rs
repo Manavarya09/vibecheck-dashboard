@@ -11,6 +11,7 @@ use std::sync::Arc;
 use tauri::{Emitter, Manager};
 
 use commands::export_commands;
+use commands::spending_commands;
 use commands::session_commands;
 use commands::settings_commands;
 use commands::stats_commands;
@@ -74,6 +75,9 @@ pub fn run() {
             export_commands::export_data,
             stats_commands::get_heatmap_data,
             stats_commands::get_historical_stats,
+            spending_commands::get_spending_rates,
+            spending_commands::upsert_spending_rate,
+            spending_commands::delete_spending_rate,
         ])
         .setup(|app| {
             let data_dir = app

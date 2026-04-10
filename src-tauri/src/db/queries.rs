@@ -486,3 +486,37 @@ pub fn get_database_stats(conn: &Connection) -> Result<(i64, i64, i64), AppError
     )?;
     Ok((sessions, activities, days))
 }
+
+// --- Spending ---
+
+pub fn get_spending_rates(conn: &Connection) -> Result<Vec<(i64, String, String, f64, Option<String>)>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT id, tool_name, rate_type, rate_value, billing_period FROM spending_rates ORDER BY tool_name"
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, i64>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?,
+            row.get::<_, f64>(3)?,
+            row.get::<_, Option<String>>(4)?,
+        ))
+    })?.collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
+pub fn upsert_spending_rate(conn: &Connection, tool_name: &str, rate_type: &str, rate_value: f64, billing_period: &str) -> Result<(), AppError> {
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        "INSERT INTO spending_rates (tool_name, rate_type, rate_value, billing_period, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5)
+         ON CONFLICT(tool_name) DO UPDATE SET rate_type = ?2, rate_value = ?3, billing_period = ?4, updated_at = ?5",
+        params![tool_name, rate_type, rate_value, billing_period, now],
+    )?;
+    Ok(())
+}
+
+pub fn delete_spending_rate(conn: &Connection, id: i64) -> Result<(), AppError> {
+    conn.execute("DELETE FROM spending_rates WHERE id = ?1", params![id])?;
+    Ok(())
+}
