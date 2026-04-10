@@ -56,3 +56,7 @@ export async function resetSettings(): Promise<Record<string, string>> {
 export async function getAutoStartEnabled(): Promise<boolean> {
   return invoke("get_auto_start_enabled");
 }
+
+export async function checkScreenRecordingPermission(): Promise<boolean> {
+  return invoke("check_screen_recording_permission");
+}

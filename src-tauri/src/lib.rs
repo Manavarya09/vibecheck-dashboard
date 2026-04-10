@@ -3,17 +3,23 @@ mod constants;
 mod db;
 mod error;
 mod monitor;
+mod permissions;
 mod tray;
 
 use std::sync::Arc;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 use commands::session_commands;
 use commands::settings_commands;
 use commands::stats_commands;
 use db::connection;
 use monitor::session::MonitorState;
+
+#[tauri::command]
+fn check_screen_recording_permission() -> bool {
+    permissions::check_screen_recording()
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -39,6 +45,7 @@ pub fn run() {
             settings_commands::update_setting,
             settings_commands::reset_settings,
             session_commands::get_auto_start_enabled,
+            check_screen_recording_permission,
         ])
         .setup(|app| {
             let data_dir = app
@@ -59,6 +66,14 @@ pub fn run() {
             app.manage(db_state);
             app.manage(Arc::new(MonitorState::default()));
             app.manage(settings_state);
+
+            // Check screen recording permission on startup
+            if !permissions::check_screen_recording() {
+                log::warn!("Screen Recording permission not granted -- window titles will be empty");
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.emit("permission-missing", "screen_recording");
+                }
+            }
 
             tray::setup_tray(app)?;
 
