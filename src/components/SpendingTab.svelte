@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import SpendingChart from "./SpendingChart.svelte";
   import { getSpendingRates, upsertSpendingRate, deleteSpendingRate } from "../lib/api";
   import type { SpendingRate } from "../lib/api";
 
@@ -38,6 +39,12 @@
 </script>
 
 <div class="spending">
+  <div class="section">
+    <h3 class="section-title">Spending Overview</h3>
+    <p class="section-desc">Your 30-day AI tool spending</p>
+    <SpendingChart />
+  </div>
+
   <div class="section">
     <h3 class="section-title">Spending Rates</h3>
     <p class="section-desc">Configure your AI tool subscription costs</p>
