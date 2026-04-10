@@ -71,3 +71,10 @@ pub fn get_current_session(db: State<DbState>) -> Result<Option<Session>, AppErr
     let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
     queries::get_active_session(&conn)
 }
+
+#[tauri::command]
+pub fn get_auto_start_enabled(
+    settings: State<Arc<crate::commands::settings_commands::SettingsState>>,
+) -> bool {
+    settings.get_bool("auto_start_on_coding").unwrap_or(false)
+}

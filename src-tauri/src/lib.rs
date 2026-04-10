@@ -38,6 +38,7 @@ pub fn run() {
             settings_commands::get_settings,
             settings_commands::update_setting,
             settings_commands::reset_settings,
+            session_commands::get_auto_start_enabled,
         ])
         .setup(|app| {
             let data_dir = app
