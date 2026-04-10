@@ -25,6 +25,7 @@
   import ActivityFeed from "./components/ActivityFeed.svelte";
   import Settings from "./components/Settings.svelte";
   import BreakOverlay from "./components/BreakOverlay.svelte";
+  import PermissionPrompt from "./components/PermissionPrompt.svelte";
 
   let view = $state<"dashboard" | "settings">("dashboard");
 
@@ -75,6 +76,7 @@
   });
 </script>
 
+<PermissionPrompt />
 <BreakOverlay />
 <Sidebar onNavigate={(v) => view = v} currentView={view} />
 <main class="content">
