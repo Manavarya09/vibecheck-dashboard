@@ -24,6 +24,16 @@ export interface SessionStats {
   currentApp: string | null;
 }
 
+export interface ActivityEntry {
+  id: number;
+  sessionId: number;
+  timestamp: string;
+  appName: string;
+  windowTitle: string;
+  category: string;
+  durationSecs: number;
+}
+
 export interface SessionUpdate {
   sessionId: number;
   durationSecs: number;
