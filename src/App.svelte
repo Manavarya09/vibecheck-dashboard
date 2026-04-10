@@ -23,6 +23,7 @@
   import RecentSessions from "./components/RecentSessions.svelte";
   import ActivityFeed from "./components/ActivityFeed.svelte";
   import Settings from "./components/Settings.svelte";
+  import BreakOverlay from "./components/BreakOverlay.svelte";
 
   let view = $state<"dashboard" | "settings">("dashboard");
 
@@ -63,6 +64,7 @@
   });
 </script>
 
+<BreakOverlay />
 <Sidebar onNavigate={(v) => view = v} currentView={view} />
 <main class="content">
   {#if view === "settings"}

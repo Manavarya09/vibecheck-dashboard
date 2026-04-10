@@ -8,13 +8,17 @@ use tokio::time::{interval, Duration};
 use log::{debug, info, warn};
 use super::classifier;
 use super::detector;
+use crate::commands::settings_commands::SettingsState;
 use crate::db::models::SessionUpdate;
 use crate::db::queries;
 use crate::db::DbState;
 
+use std::sync::atomic::AtomicI64;
+
 pub struct MonitorState {
     pub is_running: AtomicBool,
     pub is_paused: AtomicBool,
+    pub continuous_ai_secs: AtomicI64,
 }
 
 impl Default for MonitorState {
@@ -22,6 +26,7 @@ impl Default for MonitorState {
         Self {
             is_running: AtomicBool::new(false),
             is_paused: AtomicBool::new(false),
+            continuous_ai_secs: AtomicI64::new(0),
         }
     }
 }
@@ -116,6 +121,32 @@ pub fn start_monitoring(app_handle: AppHandle) {
                 {
                     let _ = tray.set_tooltip(Some(&tooltip));
                 }
+            }
+
+            // Break enforcer: track continuous AI coding time
+            let monitor = handle.state::<Arc<MonitorState>>();
+            if category == classifier::ActivityCategory::AiAssisted {
+                let prev = monitor.continuous_ai_secs.fetch_add(5, Ordering::SeqCst);
+                let current = prev + 5;
+
+                // Check if we should trigger a break
+                if let Some(settings) = handle.try_state::<Arc<SettingsState>>() {
+                    let enabled = settings.get_bool("break_enforcer_enabled").unwrap_or(true);
+                    let interval_mins = settings.get_i64("break_interval_mins").unwrap_or(25);
+                    let threshold = interval_mins * 60;
+
+                    if enabled && threshold > 0 && current >= threshold {
+                        info!("Break reminder triggered after {}s of continuous AI coding", current);
+                        let break_duration = settings.get_i64("break_duration_mins").unwrap_or(5);
+                        let _ = handle.emit("break-reminder", serde_json::json!({
+                            "continuousSecs": current,
+                            "breakDurationMins": break_duration,
+                        }));
+                        monitor.continuous_ai_secs.store(0, Ordering::SeqCst);
+                    }
+                }
+            } else {
+                monitor.continuous_ai_secs.store(0, Ordering::SeqCst);
             }
 
             summary_tick += 1;
