@@ -40,3 +40,18 @@ pub fn get_recent_activity(
 pub fn get_app_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
+
+#[tauri::command]
+pub fn get_heatmap_data(db: State<DbState>, days: Option<i64>) -> Result<Vec<DailySummary>, AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::get_daily_summaries(&conn, days.unwrap_or(365))
+}
+
+#[tauri::command]
+pub fn get_historical_stats(
+    db: State<DbState>,
+    days: i64,
+) -> Result<Vec<DailySummary>, AppError> {
+    let conn = db.conn.lock().map_err(|e| AppError::Session(e.to_string()))?;
+    queries::get_daily_summaries(&conn, days)
+}

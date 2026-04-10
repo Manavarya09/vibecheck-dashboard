@@ -72,6 +72,8 @@ pub fn run() {
             set_autostart,
             get_autostart_enabled,
             export_commands::export_data,
+            stats_commands::get_heatmap_data,
+            stats_commands::get_historical_stats,
         ])
         .setup(|app| {
             let data_dir = app

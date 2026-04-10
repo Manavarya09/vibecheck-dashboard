@@ -408,6 +408,31 @@ mod tests {
     }
 }
 
+// --- Historical ---
+
+pub fn get_daily_summaries(conn: &Connection, days: i64) -> Result<Vec<super::models::DailySummary>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT date, total_secs, ai_assisted_secs, manual_coding_secs, non_coding_secs, session_count
+         FROM daily_summaries
+         WHERE date >= date('now', ?1)
+         ORDER BY date ASC"
+    )?;
+    let offset = format!("-{} days", days);
+    let summaries = stmt
+        .query_map(params![offset], |row| {
+            Ok(super::models::DailySummary {
+                date: row.get(0)?,
+                total_secs: row.get(1)?,
+                ai_assisted_secs: row.get(2)?,
+                manual_coding_secs: row.get(3)?,
+                non_coding_secs: row.get(4)?,
+                session_count: row.get(5)?,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(summaries)
+}
+
 // --- Settings ---
 
 pub fn get_all_settings(conn: &Connection) -> Result<std::collections::HashMap<String, String>, AppError> {
