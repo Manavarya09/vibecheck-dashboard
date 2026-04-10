@@ -46,12 +46,50 @@ const SCHEMA: &str = r#"
     CREATE INDEX IF NOT EXISTS idx_sessions_started
         ON sessions(started_at);
 
+    CREATE TABLE IF NOT EXISTS spending_rates (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        tool_name     TEXT NOT NULL UNIQUE,
+        rate_type     TEXT NOT NULL CHECK(rate_type IN ('subscription', 'per_hour', 'per_token')),
+        rate_value    REAL NOT NULL,
+        billing_period TEXT CHECK(billing_period IN ('monthly', 'yearly', 'hourly')),
+        updated_at    TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS session_notes (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id    INTEGER NOT NULL REFERENCES sessions(id),
+        note          TEXT NOT NULL,
+        created_at    TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS session_tags (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id    INTEGER NOT NULL REFERENCES sessions(id),
+        tag           TEXT NOT NULL,
+        UNIQUE(session_id, tag)
+    );
+
+    CREATE TABLE IF NOT EXISTS budget_config (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        period        TEXT NOT NULL CHECK(period IN ('daily', 'weekly', 'monthly')),
+        limit_amount  REAL NOT NULL,
+        enabled       INTEGER NOT NULL DEFAULT 1
+    );
+
     CREATE TABLE IF NOT EXISTS settings (
         key        TEXT PRIMARY KEY,
         value      TEXT NOT NULL,
         updated_at TEXT NOT NULL
     );
 "#;
+
+const DEFAULT_SPENDING_RATES: &[(&str, &str, f64, &str)] = &[
+    ("Claude Pro", "subscription", 20.0, "monthly"),
+    ("Cursor Pro", "subscription", 20.0, "monthly"),
+    ("ChatGPT Plus", "subscription", 20.0, "monthly"),
+    ("GitHub Copilot", "subscription", 10.0, "monthly"),
+    ("Windsurf Pro", "subscription", 15.0, "monthly"),
+];
 
 const DEFAULT_SETTINGS: &[(&str, &str)] = &[
     ("polling_interval_secs", "5"),
@@ -70,9 +108,21 @@ pub fn init_db(data_dir: PathBuf) -> Result<DbState, rusqlite::Error> {
     let conn = Connection::open(db_path)?;
     conn.execute_batch(SCHEMA)?;
     seed_default_settings(&conn)?;
+    seed_default_spending_rates(&conn)?;
     Ok(DbState {
         conn: Mutex::new(conn),
     })
+}
+
+fn seed_default_spending_rates(conn: &Connection) -> Result<(), rusqlite::Error> {
+    let now = chrono::Utc::now().to_rfc3339();
+    for (name, rate_type, value, period) in DEFAULT_SPENDING_RATES {
+        conn.execute(
+            "INSERT OR IGNORE INTO spending_rates (tool_name, rate_type, rate_value, billing_period, updated_at) VALUES (?1, ?2, ?3, ?4, ?5)",
+            rusqlite::params![name, rate_type, value, period, now],
+        )?;
+    }
+    Ok(())
 }
 
 fn seed_default_settings(conn: &Connection) -> Result<(), rusqlite::Error> {
