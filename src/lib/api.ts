@@ -51,3 +51,8 @@ export async function updateSetting(key: string, value: string): Promise<void> {
 export async function resetSettings(): Promise<Record<string, string>> {
   return invoke("reset_settings");
 }
+
+
+export async function getAutoStartEnabled(): Promise<boolean> {
+  return invoke("get_auto_start_enabled");
+}
