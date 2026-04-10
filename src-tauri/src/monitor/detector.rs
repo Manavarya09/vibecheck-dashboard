@@ -131,3 +131,30 @@ pub fn find_running_ai_tool() -> Option<String> {
 pub fn find_running_ai_tool() -> Option<String> {
     None
 }
+
+#[cfg(target_os = "macos")]
+pub fn get_idle_seconds() -> Option<u64> {
+    let output = std::process::Command::new("ioreg")
+        .args(["-c", "IOHIDSystem", "-d", "4"])
+        .output()
+        .ok()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for line in stdout.lines() {
+        if line.contains("HIDIdleTime") {
+            // Extract the numeric value
+            let parts: Vec<&str> = line.split('=').collect();
+            if let Some(val_str) = parts.last() {
+                let trimmed = val_str.trim().trim_end_matches('}').trim();
+                if let Ok(nanos) = trimmed.parse::<u64>() {
+                    return Some(nanos / 1_000_000_000);
+                }
+            }
+        }
+    }
+    None
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn get_idle_seconds() -> Option<u64> {
+    None
+}
