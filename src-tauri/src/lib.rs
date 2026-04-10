@@ -78,6 +78,8 @@ pub fn run() {
             spending_commands::get_spending_rates,
             spending_commands::upsert_spending_rate,
             spending_commands::delete_spending_rate,
+            spending_commands::get_budget_configs,
+            spending_commands::set_budget,
         ])
         .setup(|app| {
             let data_dir = app
