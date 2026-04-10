@@ -72,3 +72,11 @@ export async function getAutostartEnabled(): Promise<boolean> {
 export async function exportData(format: "json" | "csv"): Promise<string> {
   return invoke("export_data", { format });
 }
+
+export async function getHeatmapData(days?: number): Promise<DailySummary[]> {
+  return invoke("get_heatmap_data", { days: days ?? 365 });
+}
+
+export async function getHistoricalStats(days: number): Promise<DailySummary[]> {
+  return invoke("get_historical_stats", { days });
+}
