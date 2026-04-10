@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getSettings, updateSetting, resetSettings } from "../lib/api";
+  import { getSettings, updateSetting, resetSettings, exportData } from "../lib/api";
   import { onMount } from "svelte";
 
   let settings = $state<Record<string, string>>({});
@@ -106,6 +106,25 @@
       type: "toggle",
     },
   ];
+
+  let exporting = $state(false);
+
+  async function handleExport(format: "json" | "csv") {
+    exporting = true;
+    try {
+      const data = await exportData(format);
+      const blob = new Blob([data], { type: format === "json" ? "application/json" : "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `vibecheck-export.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Export failed:", e);
+    }
+    exporting = false;
+  }
 </script>
 
 {#if !loaded}
@@ -152,6 +171,19 @@
           </div>
         </div>
       {/each}
+    </div>
+
+    <div class="export-section">
+      <h3 class="export-title">Data Export</h3>
+      <p class="export-desc">Export all sessions and activity data.</p>
+      <div class="export-actions">
+        <button class="export-btn" onclick={() => handleExport("json")} disabled={exporting}>
+          Export JSON
+        </button>
+        <button class="export-btn" onclick={() => handleExport("csv")} disabled={exporting}>
+          Export CSV
+        </button>
+      </div>
     </div>
   </div>
 {/if}
@@ -278,5 +310,43 @@
     padding: 24px;
     color: var(--text-tertiary);
     font-size: 13px;
+  }
+  .export-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .export-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .export-desc {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+  }
+  .export-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .export-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .export-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+  .export-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>

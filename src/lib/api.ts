@@ -68,3 +68,7 @@ export async function setAutostart(enabled: boolean): Promise<void> {
 export async function getAutostartEnabled(): Promise<boolean> {
   return invoke("get_autostart_enabled");
 }
+
+export async function exportData(format: "json" | "csv"): Promise<string> {
+  return invoke("export_data", { format });
+}

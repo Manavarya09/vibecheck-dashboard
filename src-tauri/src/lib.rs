@@ -10,6 +10,7 @@ use std::sync::Arc;
 
 use tauri::{Emitter, Manager};
 
+use commands::export_commands;
 use commands::session_commands;
 use commands::settings_commands;
 use commands::stats_commands;
@@ -70,6 +71,7 @@ pub fn run() {
             check_screen_recording_permission,
             set_autostart,
             get_autostart_enabled,
+            export_commands::export_data,
         ])
         .setup(|app| {
             let data_dir = app
