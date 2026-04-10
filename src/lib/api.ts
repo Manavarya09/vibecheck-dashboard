@@ -60,3 +60,11 @@ export async function getAutoStartEnabled(): Promise<boolean> {
 export async function checkScreenRecordingPermission(): Promise<boolean> {
   return invoke("check_screen_recording_permission");
 }
+
+export async function setAutostart(enabled: boolean): Promise<void> {
+  return invoke("set_autostart", { enabled });
+}
+
+export async function getAutostartEnabled(): Promise<boolean> {
+  return invoke("get_autostart_enabled");
+}

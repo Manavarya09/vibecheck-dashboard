@@ -21,10 +21,32 @@ fn check_screen_recording_permission() -> bool {
     permissions::check_screen_recording()
 }
 
+#[tauri::command]
+fn set_autostart(app_handle: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let manager = app_handle.autolaunch();
+    if enabled {
+        manager.enable().map_err(|e| e.to_string())?;
+    } else {
+        manager.disable().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn get_autostart_enabled(app_handle: tauri::AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app_handle.autolaunch().is_enabled().map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)
@@ -46,6 +68,8 @@ pub fn run() {
             settings_commands::reset_settings,
             session_commands::get_auto_start_enabled,
             check_screen_recording_permission,
+            set_autostart,
+            get_autostart_enabled,
         ])
         .setup(|app| {
             let data_dir = app
