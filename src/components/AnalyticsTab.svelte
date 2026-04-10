@@ -1,6 +1,7 @@
 <script lang="ts">
   import Heatmap from "./Heatmap.svelte";
   import TrendChart from "./TrendChart.svelte";
+  import SessionComparison from "./SessionComparison.svelte";
 </script>
 
 <div class="analytics">
@@ -14,6 +15,11 @@
     <h3 class="section-title">Trends</h3>
     <p class="section-desc">Daily coding hours with 7-day moving average</p>
     <TrendChart />
+  </div>
+  <div class="section">
+    <h3 class="section-title">Session Comparison</h3>
+    <p class="section-desc">Compare two sessions side by side</p>
+    <SessionComparison />
   </div>
 </div>
 
