@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "active-win-pos-rs"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93d151099c7d883b4ea3fb35e44d3fda5c80b7cdfade515044d723e378d3289e"
+checksum = "7f225c7e2f4ee6ebf4cf00065e9af90b5609ab225c706dbe176b00184627cc1a"
 dependencies = [
  "appkit-nsworkspace-bindings",
  "core-foundation 0.9.4",
@@ -2222,16 +2222,14 @@ dependencies = [
 
 [[package]]
 name = "kdotool"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "799b002da7851ae34b6bd3fd1530e18828fec1d0420c7e67e9575ca06504a734"
+checksum = "f2eee83d474f719244c71d8ebbe360b5634ed76e4da6bdfae9524cf9de6b9e4c"
 dependencies = [
  "anyhow",
  "chrono",
  "dbus",
- "env_logger",
  "handlebars",
- "lexopt",
  "log",
  "phf 0.13.1",
  "serde",
@@ -2279,12 +2277,6 @@ name = "leb128fmt"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
-
-[[package]]
-name = "lexopt"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "803ec87c9cfb29b9d2633f20cba1f488db3fd53f2158b1024cbefb47ba05d413"
 
 [[package]]
 name = "libappindicator"
