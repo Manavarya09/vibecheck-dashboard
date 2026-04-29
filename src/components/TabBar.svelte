@@ -30,38 +30,36 @@
 <style>
   .tab-bar {
     display: flex;
-    gap: 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 20px;
-    padding-bottom: 0;
+    gap: 10px;
+    margin: 0 auto 20px;
+    max-width: 1120px;
+    padding: 6px;
+    border: 1px solid rgba(116, 78, 55, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 251, 246, 0.72);
+    backdrop-filter: blur(12px);
+    width: fit-content;
   }
   .tab {
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-tertiary);
     background: none;
     border: none;
-    padding: 8px 0;
+    padding: 10px 14px;
     cursor: pointer;
     position: relative;
     transition: color 0.15s;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    border-radius: 999px;
   }
   .tab:hover {
     color: var(--text);
   }
   .tab.active {
-    color: var(--primary);
-  }
-  .tab.active::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--primary);
-    border-radius: 1px 1px 0 0;
+    color: white;
+    background: linear-gradient(135deg, var(--primary), #e69163);
+    box-shadow: 0 10px 24px rgba(219, 118, 85, 0.2);
   }
 </style>

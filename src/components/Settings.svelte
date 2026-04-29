@@ -1,5 +1,13 @@
 <script lang="ts">
-  import { getSettings, updateSetting, resetSettings, exportData, getDbPath } from "../lib/api";
+  import {
+    getSettings,
+    updateSetting,
+    resetSettings,
+    exportData,
+    getDbPath,
+    getAutostartEnabled,
+    setAutostart,
+  } from "../lib/api";
   import { onMount } from "svelte";
 
   let settings = $state<Record<string, string>>({});
@@ -8,6 +16,11 @@
 
   onMount(async () => {
     settings = await getSettings();
+    try {
+      settings.startup_at_login = (await getAutostartEnabled()).toString();
+    } catch (e) {
+      console.error("Failed to load autostart state:", e);
+    }
     loaded = true;
   });
 
@@ -15,6 +28,9 @@
     const current = settings[key] === "true";
     const next = (!current).toString();
     saving = key;
+    if (key === "startup_at_login") {
+      await setAutostart(!current);
+    }
     await updateSetting(key, next);
     settings[key] = next;
     saving = null;
@@ -32,6 +48,12 @@
   async function handleReset() {
     if (!confirm("Reset all settings to defaults?")) return;
     settings = await resetSettings();
+    try {
+      await setAutostart(false);
+      settings.startup_at_login = "false";
+    } catch (e) {
+      console.error("Failed to reset autostart state:", e);
+    }
   }
 
   interface SettingDef {
@@ -102,7 +124,7 @@
     {
       key: "startup_at_login",
       label: "Start at Login",
-      description: "Launch VibeCheck when you log in to your Mac",
+      description: "Launch VibeCheck automatically when you log in",
       type: "toggle",
     },
   ];

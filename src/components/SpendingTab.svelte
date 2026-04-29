@@ -1,18 +1,33 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import SpendingChart from "./SpendingChart.svelte";
-  import { getSpendingRates, upsertSpendingRate, deleteSpendingRate } from "../lib/api";
-  import type { SpendingRate } from "../lib/api";
+  import {
+    getSpendingRates,
+    upsertSpendingRate,
+    deleteSpendingRate,
+    getBudgetConfigs,
+    setBudget,
+  } from "../lib/api";
+  import type { BudgetConfig, SpendingRate } from "../lib/api";
 
   let rates = $state<SpendingRate[]>([]);
+  let budgets = $state<BudgetConfig[]>([]);
   let loaded = $state(false);
   let newTool = $state("");
   let newRate = $state(20);
   let newType = $state("subscription");
   let newPeriod = $state("monthly");
+  let monthlyBudget = $state(150);
 
   onMount(async () => {
-    rates = await getSpendingRates();
+    const [loadedRates, loadedBudgets] = await Promise.all([
+      getSpendingRates(),
+      getBudgetConfigs(),
+    ]);
+    rates = loadedRates;
+    budgets = loadedBudgets;
+    const monthly = loadedBudgets.find((budget) => budget.period === "monthly");
+    if (monthly) monthlyBudget = monthly.limitAmount;
     loaded = true;
   });
 
@@ -28,6 +43,11 @@
     rates = await getSpendingRates();
   }
 
+  async function handleSaveBudget() {
+    await setBudget("monthly", monthlyBudget);
+    budgets = await getBudgetConfigs();
+  }
+
   let monthlyTotal = $derived(
     rates.reduce((sum, r) => {
       if (r.rateType === "subscription") {
@@ -35,6 +55,9 @@
       }
       return sum;
     }, 0)
+  );
+  let projectedStatus = $derived(
+    monthlyBudget > 0 ? Math.round((monthlyTotal / monthlyBudget) * 100) : 0
   );
 </script>
 
@@ -73,6 +96,21 @@
       <div class="monthly-total">
         <span class="total-label">Monthly total</span>
         <span class="total-value">${monthlyTotal.toFixed(2)}</span>
+      </div>
+
+      <div class="budget-panel">
+        <div class="budget-copy">
+          <span class="budget-title">Monthly budget</span>
+          <span class="budget-desc">Set the limit where Panko starts shaming your subscription stack.</span>
+        </div>
+        <div class="budget-actions">
+          <input class="input num" type="number" bind:value={monthlyBudget} min="0" step="1" />
+          <button class="add-btn" onclick={handleSaveBudget}>Save Budget</button>
+        </div>
+        <div class="budget-status">
+          <span class="total-label">Projected load</span>
+          <span class:danger={projectedStatus >= 100} class="total-value">{projectedStatus}%</span>
+        </div>
       </div>
     {:else}
       <p class="loading">Loading...</p>
@@ -116,7 +154,32 @@
     display: flex; justify-content: space-between; margin-top: 16px;
     padding-top: 12px; border-top: 1px solid var(--border);
   }
+  .budget-panel {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .budget-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .budget-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .budget-desc { font-size: 12px; color: var(--text-tertiary); }
+  .budget-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .budget-status {
+    display: flex;
+    justify-content: space-between;
+  }
   .total-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
   .total-value { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--primary); }
+  .total-value.danger { color: var(--danger); }
   .loading { font-size: 13px; color: var(--text-tertiary); }
 </style>

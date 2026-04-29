@@ -42,4 +42,9 @@ export interface SessionUpdate {
   aiAssistedSecs: number;
   manualCodingSecs: number;
   nonCodingSecs: number;
+  workflowState: string;
+  contextSwitches10m: number;
+  aiStreakSecs: number;
+  codingStreakSecs: number;
+  promptLoopScore: number;
 }

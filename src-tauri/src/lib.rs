@@ -8,7 +8,7 @@ mod tray;
 
 use std::sync::Arc;
 
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
 use commands::export_commands;
 use commands::session_commands;
@@ -109,6 +109,34 @@ pub fn run() {
             app.manage(Arc::new(MonitorState::default()));
             app.manage(settings_state);
 
+            if app.get_webview_window("companion").is_none() {
+                let companion = WebviewWindowBuilder::new(
+                    app,
+                    "companion",
+                    WebviewUrl::App("index.html?view=companion".into()),
+                )
+                .title("Panko")
+                .inner_size(360.0, 260.0)
+                .transparent(true)
+                .decorations(false)
+                .always_on_top(true)
+                .resizable(false)
+                .skip_taskbar(true)
+                .shadow(false)
+                .visible(true)
+                .build()?;
+
+                if let Ok(Some(monitor)) = app.primary_monitor() {
+                    let monitor_size = monitor.size();
+                    let outer = companion.outer_size().unwrap_or_default();
+                    let x = monitor_size.width.saturating_sub(outer.width + 32) as f64;
+                    let y = monitor_size.height.saturating_sub(outer.height + 64) as f64;
+                    let _ = companion.set_position(tauri::Position::Physical(
+                        tauri::PhysicalPosition::new(x as i32, y as i32),
+                    ));
+                }
+            }
+
             // Check screen recording permission on startup
             if !permissions::check_screen_recording() {
                 log::warn!(
@@ -120,6 +148,7 @@ pub fn run() {
             }
 
             tray::setup_tray(app)?;
+            monitor::session::start_monitoring(app.handle().clone());
 
             // Close window to tray instead of quitting
             let main_window = app.get_webview_window("main").unwrap();

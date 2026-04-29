@@ -55,7 +55,10 @@
 
 <div class="card">
   <div class="card-header">
-    <h3>Current Session</h3>
+    <div>
+      <p class="eyebrow">Live Session</p>
+      <h3>Current Session</h3>
+    </div>
     <StatusIndicator status={sessionStatus} />
   </div>
 
@@ -103,10 +106,14 @@
 
 <style>
   .card {
-    background: var(--surface);
+    background:
+      radial-gradient(circle at top right, rgba(219, 118, 85, 0.16), transparent 36%),
+      var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 20px 24px;
+    padding: 22px 24px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
   }
   .card-header {
     display: flex;
@@ -114,12 +121,19 @@
     align-items: center;
     margin-bottom: 16px;
   }
-  h3 {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
+  .eyebrow {
+    font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.16em;
+    color: var(--primary);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.03em;
   }
   .timer-row {
     display: flex;
@@ -129,9 +143,9 @@
   }
   .timer {
     font-family: var(--font-mono);
-    font-size: 40px;
+    font-size: 46px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--ink);
     line-height: 1;
   }
   .started-at {

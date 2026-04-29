@@ -1,11 +1,21 @@
 <script lang="ts">
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
+  import { checkScreenRecordingPermission } from "../lib/api";
 
   let visible = $state(false);
   let dismissed = $state(false);
 
-  onMount(() => {
+  onMount(async () => {
+    try {
+      const hasPermission = await checkScreenRecordingPermission();
+      if (!hasPermission && !dismissed) {
+        visible = true;
+      }
+    } catch (e) {
+      console.error("Permission check failed:", e);
+    }
+
     listen("permission-missing", () => {
       if (!dismissed) {
         visible = true;

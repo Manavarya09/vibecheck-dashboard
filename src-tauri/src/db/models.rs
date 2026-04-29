@@ -54,4 +54,9 @@ pub struct SessionUpdate {
     pub ai_assisted_secs: i64,
     pub manual_coding_secs: i64,
     pub non_coding_secs: i64,
+    pub workflow_state: String,
+    pub context_switches_10m: i64,
+    pub ai_streak_secs: i64,
+    pub coding_streak_secs: i64,
+    pub prompt_loop_score: i64,
 }

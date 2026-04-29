@@ -52,11 +52,6 @@ export async function resetSettings(): Promise<Record<string, string>> {
   return invoke("reset_settings");
 }
 
-
-export async function getAutoStartEnabled(): Promise<boolean> {
-  return invoke("get_auto_start_enabled");
-}
-
 export async function checkScreenRecordingPermission(): Promise<boolean> {
   return invoke("check_screen_recording_permission");
 }
@@ -81,6 +76,32 @@ export async function getHistoricalStats(days: number): Promise<DailySummary[]> 
   return invoke("get_historical_stats", { days });
 }
 
+export interface SessionNote {
+  id: number;
+  note: string;
+  createdAt: string;
+}
+
+export async function addSessionNote(sessionId: number, note: string): Promise<void> {
+  return invoke("add_session_note", { sessionId, note });
+}
+
+export async function getSessionNotes(sessionId: number): Promise<SessionNote[]> {
+  const rows = await invoke<[number, string, string][]>("get_session_notes", { sessionId });
+  return rows.map(([id, note, createdAt]) => ({ id, note, createdAt }));
+}
+
+export async function addSessionTag(sessionId: number, tag: string): Promise<void> {
+  return invoke("add_session_tag", { sessionId, tag });
+}
+
+export async function getSessionTags(sessionId: number): Promise<string[]> {
+  return invoke("get_session_tags", { sessionId });
+}
+
+export async function removeSessionTag(sessionId: number, tag: string): Promise<void> {
+  return invoke("remove_session_tag", { sessionId, tag });
+}
 
 export interface SpendingRate {
   id: number;
@@ -102,6 +123,20 @@ export async function deleteSpendingRate(id: number): Promise<void> {
   return invoke("delete_spending_rate", { id });
 }
 
+export interface BudgetConfig {
+  id: number;
+  period: "daily" | "weekly" | "monthly";
+  limitAmount: number;
+  enabled: boolean;
+}
+
+export async function getBudgetConfigs(): Promise<BudgetConfig[]> {
+  return invoke("get_budget_configs");
+}
+
+export async function setBudget(period: "daily" | "weekly" | "monthly", limitAmount: number): Promise<void> {
+  return invoke("set_budget", { period, limitAmount });
+}
 
 export async function getDbPath(): Promise<string> {
   return invoke("get_db_path");

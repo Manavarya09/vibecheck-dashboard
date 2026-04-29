@@ -7,7 +7,7 @@ use crate::db::models::Session;
 use crate::db::queries;
 use crate::db::DbState;
 use crate::error::AppError;
-use crate::monitor::session::{start_monitoring, MonitorState};
+use crate::monitor::session::MonitorState;
 
 #[tauri::command]
 pub fn start_session(db: State<DbState>, app_handle: AppHandle) -> Result<Session, AppError> {
@@ -23,7 +23,7 @@ pub fn start_session(db: State<DbState>, app_handle: AppHandle) -> Result<Sessio
     let session = queries::create_session(&conn)?;
     drop(conn);
 
-    start_monitoring(app_handle);
+    let _ = app_handle;
     Ok(session)
 }
 
@@ -39,7 +39,10 @@ pub fn stop_session(db: State<DbState>, app_handle: AppHandle) -> Result<(), App
     }
     drop(conn);
 
-    crate::monitor::session::stop_monitoring(&app_handle);
+    let monitor = app_handle.state::<Arc<MonitorState>>();
+    monitor.is_paused.store(false, Ordering::SeqCst);
+    monitor.auto_paused.store(false, Ordering::SeqCst);
+    crate::monitor::session::clear_runtime_state(&app_handle);
     Ok(())
 }
 

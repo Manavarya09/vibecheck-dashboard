@@ -83,8 +83,11 @@
 <aside class="sidebar" data-tauri-drag-region>
   <div class="sidebar-top">
     <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <span class="brand-mark-face"></span>
+      </div>
       <h1 class="brand-name">VibeCheck</h1>
-      <p class="brand-tagline">Developer Wellness</p>
+      <p class="brand-tagline">Panko's Desktop Companion</p>
       <p class="brand-version">v0.1.0</p>
     </div>
 
@@ -153,23 +156,45 @@
 
 <style>
   .sidebar {
-    width: 220px;
+    width: 248px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 24px 20px;
-    border-right: 1px solid var(--border);
-    background: var(--bg);
+    padding: 28px 22px;
+    border-right: 1px solid rgba(116, 78, 55, 0.12);
+    background: linear-gradient(180deg, rgba(255, 251, 246, 0.92), rgba(246, 236, 223, 0.78));
+    backdrop-filter: blur(14px);
   }
   .brand {
     margin-bottom: 32px;
+    position: relative;
+  }
+  .brand-mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(219, 118, 85, 0.18), rgba(255, 255, 255, 0.8));
+    border: 1px solid rgba(116, 78, 55, 0.12);
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+  .brand-mark-face {
+    position: absolute;
+    inset: 9px;
+    border-radius: 14px;
+    background:
+      radial-gradient(circle at 30% 34%, #242529 0 4px, transparent 5px),
+      radial-gradient(circle at 70% 34%, #242529 0 4px, transparent 5px),
+      radial-gradient(circle at 50% 56%, #242529 0 5px, transparent 6px),
+      linear-gradient(#fffdf8, #fffdf8);
   }
   .brand-name {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.02em;
+    font-size: 27px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.05em;
   }
   .brand-version {
     font-size: 10px;
@@ -179,8 +204,8 @@
   }
   .brand-tagline {
     font-size: 12px;
-    color: var(--text-tertiary);
-    margin-top: 2px;
+    color: var(--text-secondary);
+    margin-top: 4px;
   }
   .controls {
     display: flex;
@@ -189,15 +214,19 @@
   }
   .btn {
     width: 100%;
-    padding: 10px 16px;
-    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    border-radius: 14px;
     font-size: 13px;
-    font-weight: 600;
-    transition: background 0.15s, opacity 0.15s;
+    font-weight: 700;
+    transition: background 0.15s, opacity 0.15s, transform 0.15s;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
   }
   .btn-primary {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), #e69264);
     color: white;
+    box-shadow: 0 14px 24px rgba(219, 118, 85, 0.24);
   }
   .btn-primary:hover:not(:disabled) {
     background: var(--primary-hover);
@@ -265,7 +294,7 @@
     font-family: var(--font-mono);
     font-size: 15px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--ink);
   }
   .stat-value.accent {
     color: var(--primary);

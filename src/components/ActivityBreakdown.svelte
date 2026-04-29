@@ -29,7 +29,12 @@
 </script>
 
 <div class="card">
-  <h3>Session Breakdown</h3>
+  <div class="header">
+    <div>
+      <p class="eyebrow">Behavior Split</p>
+      <h3>Session Breakdown</h3>
+    </div>
+  </div>
 
   {#if total > 0}
     <div class="rows">
@@ -62,14 +67,25 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 20px 24px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+  }
+  .header {
+    margin-bottom: 16px;
+  }
+  .eyebrow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-tertiary);
+    font-weight: 800;
+    margin-bottom: 4px;
   }
   h3 {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 16px;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.03em;
   }
   .rows {
     display: flex;

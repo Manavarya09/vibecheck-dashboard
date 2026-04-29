@@ -551,12 +551,19 @@ pub fn get_budget_configs(conn: &Connection) -> Result<Vec<(i64, String, f64, bo
 }
 
 pub fn upsert_budget(conn: &Connection, period: &str, limit_amount: f64) -> Result<(), AppError> {
-    conn.execute(
-        "INSERT INTO budget_config (period, limit_amount, enabled)
-         VALUES (?1, ?2, 1)
-         ON CONFLICT(id) DO UPDATE SET limit_amount = ?2",
+    let updated = conn.execute(
+        "UPDATE budget_config
+         SET limit_amount = ?2, enabled = 1
+         WHERE period = ?1",
         params![period, limit_amount],
     )?;
+    if updated == 0 {
+        conn.execute(
+            "INSERT INTO budget_config (period, limit_amount, enabled)
+             VALUES (?1, ?2, 1)",
+            params![period, limit_amount],
+        )?;
+    }
     Ok(())
 }
 
