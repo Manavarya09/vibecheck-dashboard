@@ -68,6 +68,16 @@ export async function exportData(format: "json" | "csv"): Promise<string> {
   return invoke("export_data", { format });
 }
 
+export async function exportResearchReport(format: "json" | "csv"): Promise<string> {
+  return invoke("export_research_report", { format });
+}
+
+export async function moveCompanion(
+  dock: "top_left" | "top_right" | "bottom_left" | "bottom_right"
+): Promise<void> {
+  return invoke("move_companion", { dock });
+}
+
 export async function getHeatmapData(days?: number): Promise<DailySummary[]> {
   return invoke("get_heatmap_data", { days: days ?? 365 });
 }

@@ -100,6 +100,7 @@ const DEFAULT_SETTINGS: &[(&str, &str)] = &[
     ("auto_stop_on_idle", "false"),
     ("startup_at_login", "false"),
     ("break_enforcer_enabled", "true"),
+    ("companion_dock", "bottom_right"),
 ];
 
 pub fn init_db(data_dir: PathBuf) -> Result<DbState, rusqlite::Error> {

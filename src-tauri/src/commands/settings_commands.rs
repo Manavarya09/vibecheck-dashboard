@@ -95,6 +95,7 @@ pub fn reset_settings(
         ("auto_stop_on_idle", "false"),
         ("startup_at_login", "false"),
         ("break_enforcer_enabled", "true"),
+        ("companion_dock", "bottom_right"),
     ];
     for (key, value) in defaults {
         conn.execute(

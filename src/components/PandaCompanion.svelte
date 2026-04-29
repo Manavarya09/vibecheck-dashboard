@@ -6,6 +6,7 @@
     liveUpdate,
     todaySummary,
   } from "../lib/stores";
+  import { moveCompanion } from "../lib/api";
   import { formatDuration, pct } from "../lib/utils";
 
   type VoiceMode = "roast" | "coach" | "gentle";
@@ -98,9 +99,48 @@
     paused: ["Walk a lap", "Reset posture", "Return with one objective"],
   };
 
+  const WORKFLOW_OVERRIDES: Record<string, Partial<PandaPrompt>> = {
+    context_switch_storm: {
+      roast: [
+        "You switched tools {switches} times in ten minutes. That is not flow. That is browser parkour.",
+        "This is a context-switch storm. Your tabs are running a coup against your frontal lobe.",
+      ],
+      coach: [
+        "Your tool switching is unusually high. Collapse the workflow to one editor and one AI surface.",
+      ],
+    },
+    prompt_edit_loop: {
+      roast: [
+        "You are in a prompt-edit loop. Claude writes, you tweak, Claude writes again, and somehow dinner disappears.",
+        "This session has strong prompt-ping-pong energy. Consider thinking one thought by yourself.",
+      ],
+      coach: [
+        "The session is oscillating between generation and edits. Pause and define the next acceptance criterion.",
+      ],
+    },
+    agent_shepherding: {
+      roast: [
+        "You are supervising an AI herd now. Panko sees agent babysitting, not clean implementation.",
+        "Claude is off-road and you are jogging behind it with a keyboard. Tighten the task scope.",
+      ],
+      coach: [
+        "Agent-guided workflow detected. Check whether the model is still solving the problem you intended.",
+      ],
+    },
+    research_spiral: {
+      roast: [
+        "Browser AI plus editor plus terminal AI? Brother this is a research spiral with snacks missing.",
+      ],
+      coach: [
+        "You are spanning too many surfaces for one idea. Reduce the workflow to the next concrete output.",
+      ],
+    },
+  };
+
   let voiceMode = $state<VoiceMode>("roast");
   let promptIndex = $state(0);
   let tick: ReturnType<typeof setInterval> | null = null;
+  let isCompanionWindow = $state(false);
 
   let update = $derived($liveUpdate);
   let totalSecs = $derived(update?.durationSecs ?? $currentSession?.durationSecs ?? 0);
@@ -137,14 +177,17 @@
 
   let activePromptSet = $derived(SCRIPT[mood][voiceMode]);
   let rawPrompt = $derived(
-    activePromptSet.length > 0
-      ? activePromptSet[promptIndex % activePromptSet.length]
+    (WORKFLOW_OVERRIDES[workflowState]?.[voiceMode]?.length ?? 0) > 0
+      ? WORKFLOW_OVERRIDES[workflowState][voiceMode]![promptIndex % WORKFLOW_OVERRIDES[workflowState][voiceMode]!.length]
+      : activePromptSet.length > 0
+        ? activePromptSet[promptIndex % activePromptSet.length]
       : ""
   );
   let prompt = $derived(
     rawPrompt
       .replaceAll("{duration}", formatDuration(totalSecs))
       .replaceAll("{aiPct}", `${aiPct}%`)
+      .replaceAll("{switches}", `${contextSwitches}`)
   );
 
   let moodLabel = $derived(
@@ -179,6 +222,7 @@
   });
 
   onMount(() => {
+    isCompanionWindow = document.body.dataset.view === "companion";
     tick = setInterval(() => {
       promptIndex += 1;
     }, 18000);
@@ -187,6 +231,9 @@
   onDestroy(() => {
     if (tick) clearInterval(tick);
   });
+  async function handleDock(dock: "top_left" | "top_right" | "bottom_left" | "bottom_right") {
+    await moveCompanion(dock);
+  }
 </script>
 
 <aside class="panda-shell" aria-label="Panko the panda coding coach">
@@ -230,6 +277,15 @@
       <span>Switches: <strong>{contextSwitches}</strong></span>
       <span>AI streak: <strong>{formatDuration(aiStreakSecs)}</strong></span>
     </div>
+    {#if isCompanionWindow}
+      <div class="dock-row">
+        <span class="dock-label">Dock</span>
+        <button class="dock-chip" onclick={() => handleDock("top_left")}>TL</button>
+        <button class="dock-chip" onclick={() => handleDock("top_right")}>TR</button>
+        <button class="dock-chip" onclick={() => handleDock("bottom_left")}>BL</button>
+        <button class="dock-chip" onclick={() => handleDock("bottom_right")}>BR</button>
+      </div>
+    {/if}
     <div class="action-row">
       {#each actionItems as item}
         <span class="action-pill">{item}</span>
@@ -362,6 +418,29 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+  }
+  .dock-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .dock-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-right: 2px;
+  }
+  .dock-chip {
+    width: 32px;
+    height: 28px;
+    border-radius: 10px;
+    background: rgba(40, 31, 23, 0.08);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 800;
   }
   .workflow-row {
     display: flex;

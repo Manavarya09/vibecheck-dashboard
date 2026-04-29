@@ -8,7 +8,7 @@ mod tray;
 
 use std::sync::Arc;
 
-use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
 
 use commands::export_commands;
 use commands::session_commands;
@@ -16,6 +16,7 @@ use commands::settings_commands;
 use commands::spending_commands;
 use commands::stats_commands;
 use db::connection;
+use db::DbState;
 use monitor::session::MonitorState;
 
 #[tauri::command]
@@ -42,6 +43,48 @@ fn get_autostart_enabled(app_handle: tauri::AppHandle) -> Result<bool, String> {
         .autolaunch()
         .is_enabled()
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn move_companion(
+    app_handle: tauri::AppHandle,
+    settings: State<Arc<settings_commands::SettingsState>>,
+    db: State<DbState>,
+    dock: String,
+) -> Result<(), String> {
+    let allowed = ["top_left", "top_right", "bottom_left", "bottom_right"];
+    if !allowed.contains(&dock.as_str()) {
+        return Err("Invalid dock position".into());
+    }
+
+    if let Some(window) = app_handle.get_webview_window("companion") {
+        if let Some(monitor) = app_handle.primary_monitor().map_err(|e| e.to_string())? {
+            let monitor_size = monitor.size();
+            let window_size = window.outer_size().map_err(|e| e.to_string())?;
+            let padding = 28_i32;
+            let x = match dock.as_str() {
+                "top_left" | "bottom_left" => padding,
+                _ => monitor_size.width as i32 - window_size.width as i32 - padding,
+            };
+            let y = match dock.as_str() {
+                "top_left" | "top_right" => padding,
+                _ => monitor_size.height as i32 - window_size.height as i32 - padding * 2,
+            };
+            window
+                .set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(x, y)))
+                .map_err(|e| e.to_string())?;
+        }
+    }
+
+    {
+        let conn = db.conn.lock().map_err(|e| e.to_string())?;
+        crate::db::queries::update_setting(&conn, "companion_dock", &dock)
+            .map_err(|e| e.to_string())?;
+    }
+    if let Ok(mut cache) = settings.cache.write() {
+        cache.insert(String::from("companion_dock"), dock);
+    }
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -75,7 +118,9 @@ pub fn run() {
             check_screen_recording_permission,
             set_autostart,
             get_autostart_enabled,
+            move_companion,
             export_commands::export_data,
+            export_commands::export_research_report,
             stats_commands::get_heatmap_data,
             stats_commands::get_historical_stats,
             stats_commands::add_session_note,
@@ -126,13 +171,24 @@ pub fn run() {
                 .visible(true)
                 .build()?;
 
+                let dock = app
+                    .state::<Arc<settings_commands::SettingsState>>()
+                    .get("companion_dock")
+                    .unwrap_or_else(|| "bottom_right".into());
                 if let Ok(Some(monitor)) = app.primary_monitor() {
                     let monitor_size = monitor.size();
                     let outer = companion.outer_size().unwrap_or_default();
-                    let x = monitor_size.width.saturating_sub(outer.width + 32) as f64;
-                    let y = monitor_size.height.saturating_sub(outer.height + 64) as f64;
+                    let padding = 28_i32;
+                    let x = match dock.as_str() {
+                        "top_left" | "bottom_left" => padding,
+                        _ => monitor_size.width as i32 - outer.width as i32 - padding,
+                    };
+                    let y = match dock.as_str() {
+                        "top_left" | "top_right" => padding,
+                        _ => monitor_size.height as i32 - outer.height as i32 - padding * 2,
+                    };
                     let _ = companion.set_position(tauri::Position::Physical(
-                        tauri::PhysicalPosition::new(x as i32, y as i32),
+                        tauri::PhysicalPosition::new(x, y),
                     ));
                 }
             }
